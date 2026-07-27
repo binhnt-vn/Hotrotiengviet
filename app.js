@@ -1,123 +1,120 @@
+// ============================================================
+// Word Add-in: Tiện ích Văn bản Tiếng Việt
+// Version: 1.1.0 - Fixed syntax errors, scope support, window bindings
+// ============================================================
+
 // Đảm bảo Office.js khởi tạo hoàn tất
-Office.onReady((info) => {
+Office.onReady(function(info) {
     console.log("Office ready info:", info);
     if (info.host === Office.HostType.Word) {
         loadAbbrevRules();
+        console.log("Add-in initialized successfully.");
     }
 });
 
-// Chuyển Tab
-function switchTab(tabId) {
-    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-
-    const activeTabObj = document.getElementById(tabId);
-    if (activeTabObj) activeTabObj.classList.add('active');
-
-    if (window.event && window.event.currentTarget) {
-        window.event.currentTarget.classList.add('active');
+// ============================================================
+// HELPER: Lấy range theo scope
+// ============================================================
+function getRange(context, scopeName) {
+    var scopeEl = document.querySelector('input[name="' + scopeName + '"]:checked');
+    var value = scopeEl ? scopeEl.value : 'all';
+    if (value === 'selection') {
+        return context.document.getSelection();
     }
+    return context.document.body;
 }
 
-// -------------------------------------------------------------
+// ============================================================
+// CHUYỂN TAB
+// ============================================================
+function switchTab(tabId) {
+    // Bỏ active tất cả tab buttons
+    document.querySelectorAll('.tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+    });
+    // Bỏ active tất cả tab content
+    document.querySelectorAll('.tab-content').forEach(function(content) {
+        content.classList.remove('active');
+    });
+
+    // Đánh dấu active tab content
+    var activeTabObj = document.getElementById(tabId);
+    if (activeTabObj) activeTabObj.classList.add('active');
+
+    // Đánh dấu active tab button tương ứng
+    var btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(function(btn) {
+        if (btn.getAttribute('data-tab') === tabId) {
+            btn.classList.add('active');
+        }
+    });
+}
+
+// ============================================================
 // 1. TÍNH NĂNG CHỈNH SỬA ĐỊNH DẠNG NGÀY THÁNG
-// -------------------------------------------------------------
+// ============================================================
 async function formatDates() {
-    const statusDiv = document.getElementById('dateStatus');
+    var statusDiv = document.getElementById('dateStatus');
     statusDiv.className = 'status-msg';
     statusDiv.innerText = 'Đang xử lý...';
 
     try {
-        await Word.run(async (context) => {
-            const body = context.document.body;
-            body.load("text");
+        await Word.run(async function(context) {
+            var range = getRange(context, 'dateScope');
+            range.load('text');
             await context.sync();
 
-            let fullText = body.text || "";
-            let replaceCount = 0;
+            var text = range.text || '';
+            var replaceCount = 0;
 
-            // Mẫu 1: ngày DD tháng MM năm YYYY
-            const regex1 = /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi;
-            let m;
-            let list1 = [];
-            while ((m = regex1.exec(fullText)) !== null) {
-                list1.push({ src: m[0], rep: `${m[1]}/${m[2]}/${m[3]}` });
-            }
-
-            for (const item of list1) {
-                const results = body.search(item.src, { matchCase: false });
-                results.load("items");
-                await context.sync();
-
-                for (let i = 0; i < results.items.length; i++) {
-                    results.items[i].insertText(item.rep, Word.InsertLocation.replace);
-                    replaceCount++;
+            // Thứ tự pattern quan trọng: dài nhất trước
+            var patterns = [
+                {
+                    reg: /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi,
+                    rep: function(m, d, mth, y) { return parseInt(d) + '/' + parseInt(mth) + '/' + y; }
+                },
+                {
+                    reg: /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})/gi,
+                    rep: function(m, d, mth) { return 'ngày ' + parseInt(d) + '/' + parseInt(mth); }
+                },
+                {
+                    reg: /tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi,
+                    rep: function(m, mth, y) { return 'T' + parseInt(mth) + '/' + y; }
+                },
+                {
+                    reg: /tháng\s+(\d{1,2})/gi,
+                    rep: function(m, mth) { return 'T' + parseInt(mth); }
                 }
-            }
+            ];
 
-            // Mẫu 2: ngày DD tháng MM
-            body.load("text");
-            await context.sync();
-            fullText = body.text || "";
-            const regex2 = /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})/gi;
-            let list2 = [];
-            while ((m = regex2.exec(fullText)) !== null) {
-                list2.push({ src: m[0], rep: `ngày ${m[1]}/${m[2]}` });
-            }
-            for (const item of list2) {
-                const results = body.search(item.src, { matchCase: false });
-                results.load("items");
-                await context.sync();
-
-                for (let i = 0; i < results.items.length; i++) {
-                    results.items[i].insertText(item.rep, Word.InsertLocation.replace);
-                    replaceCount++;
+            for (var pi = 0; pi < patterns.length; pi++) {
+                var p = patterns[pi];
+                var matches = [];
+                var match;
+                while ((match = p.reg.exec(text)) !== null) {
+                    matches.push({ src: match[0], dest: p.rep.apply(null, match) });
                 }
-            }
 
-            // Mẫu 3: tháng MM năm YYYY
-            body.load("text");
-            await context.sync();
-            fullText = body.text || "";
-            const regex3 = /tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi;
-            let list3 = [];
-            while ((m = regex3.exec(fullText)) !== null) {
-                list3.push({ src: m[0], rep: `T${m[1]}/${m[2]}` });
-            }
-            for (const item of list3) {
-                const results = body.search(item.src, { matchCase: false });
-                results.load("items");
-                await context.sync();
-
-                for (let i = 0; i < results.items.length; i++) {
-                    results.items[i].insertText(item.rep, Word.InsertLocation.replace);
-                    replaceCount++;
+                for (var mi = 0; mi < matches.length; mi++) {
+                    var item = matches[mi];
+                    var results = range.search(item.src, { matchCase: false });
+                    results.load('items');
+                    await context.sync();
+                    for (var i = 0; i < results.items.length; i++) {
+                        results.items[i].insertText(item.dest, Word.InsertLocation.replace);
+                        replaceCount++;
+                    }
                 }
-            }
 
-            // Mẫu 4: tháng MM
-            body.load("text");
-            await context.sync();
-            fullText = body.text || "";
-            const regex4 = /tháng\s+(\d{1,2})/gi;
-            let list4 = [];
-            while ((m = regex4.exec(fullText)) !== null) {
-                list4.push({ src: m[0], rep: `T${m[1]}` });
-            }
-            for (const item of list4) {
-                const results = body.search(item.src, { matchCase: false });
-                results.load("items");
+                // Reload text sau mỗi pattern vì nội dung đã thay đổi
+                range.load('text');
                 await context.sync();
-
-                for (let i = 0; i < results.items.length; i++) {
-                    results.items[i].insertText(item.rep, Word.InsertLocation.replace);
-                    replaceCount++;
-                }
+                text = range.text || '';
             }
 
             await context.sync();
             statusDiv.className = 'status-msg success';
-            statusDiv.innerText = `Đã chuyển đổi thành công ${replaceCount} vị trí!`;
+            statusDiv.innerText = 'Đã chuyển đổi thành công ' + replaceCount + ' vị trí!';
         });
     } catch (err) {
         console.error(err);
@@ -126,92 +123,69 @@ async function formatDates() {
     }
 }
 
-
-
-
-// Helper thay thế bằng Regex trong Word
-async function replaceWithRegex(context, parentRange, regex, replacementFn) {
-    parentRange.load('text');
-    await context.sync();
-
-    let matches = [];
-    let match;
-    const fullText = parentRange.text || "";
-    
-    while ((match = regex.exec(fullText)) !== null) {
-        matches.push({
-            text: match[0],
-            replacement: replacementFn(...match)
-        });
-    }
-
-    let replaceCount = 0;
-    for (const item of matches) {
-        const searchResults = parentRange.search(item.text, { matchCase: false, matchWholeWord: false });
-        searchResults.load('items');
-        await context.sync();
-
-        for (let i = 0; i < searchResults.items.length; i++) {
-            searchResults.items[i].insertText(item.replacement, Word.InsertLocation.replace);
-            replaceCount++;
-        }
-    }
-    return replaceCount;
-}
-
-
-// -------------------------------------------------------------
+// ============================================================
 // 2. TÍNH NĂNG THAY THẾ TỪ VIẾT TẮT
-// -------------------------------------------------------------
-let abbrevRules = [
+// ============================================================
+var abbrevRules = [
     { full: "Cộng hòa Xã hội Chủ nghĩa Việt Nam", short: "CHXHCNVN" },
+    { full: "Thành phố Hồ Chí Minh", short: "TP.HCM" },
     { full: "Thành phố", short: "TP." },
     { full: "Ủy ban nhân dân", short: "UBND" },
     { full: "Hội đồng nhân dân", short: "HĐND" },
-    { full: "Trách nhiệm hữu hạn", short: "TNHH" }
+    { full: "Trách nhiệm hữu hạn", short: "TNHH" },
+    { full: "Bộ Tài chính", short: "BTC" },
+    { full: "Ngân hàng Nhà nước", short: "NHNN" }
 ];
 
 function loadAbbrevRules() {
-    const saved = localStorage.getItem('abbrevRules');
-    if (saved) {
-        try { abbrevRules = JSON.parse(saved); } catch(e){}
+    try {
+        var saved = localStorage.getItem('abbrevRules');
+        if (saved) {
+            abbrevRules = JSON.parse(saved);
+        }
+    } catch (e) {
+        console.warn('Cannot load from localStorage:', e);
     }
     renderAbbrevTable();
 }
 
 function saveAbbrevRules() {
-    localStorage.setItem('abbrevRules', JSON.stringify(abbrevRules));
+    try {
+        localStorage.setItem('abbrevRules', JSON.stringify(abbrevRules));
+    } catch (e) {
+        console.warn('Cannot save to localStorage:', e);
+    }
     renderAbbrevTable();
 }
 
 function renderAbbrevTable() {
-    const tbody = document.getElementById('abbrevList');
+    var tbody = document.getElementById('abbrevList');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
-    abbrevRules.forEach((rule, idx) => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${rule.full}</td>
-            <td><strong>${rule.short}</strong></td>
-            <td><button class="btn-del" onclick="removeAbbrevRule(${idx})">Xóa</button></td>
-        `;
+    abbrevRules.forEach(function(rule, idx) {
+        var tr = document.createElement('tr');
+        tr.innerHTML =
+            '<td>' + rule.full + '</td>' +
+            '<td><strong>' + rule.short + '</strong></td>' +
+            '<td><button class="btn-del" onclick="removeAbbrevRule(' + idx + ')">Xóa</button></td>';
         tbody.appendChild(tr);
     });
 }
 
 function addAbbrevRule() {
-    const fullInput = document.getElementById('fullTerm');
-    const shortInput = document.getElementById('shortTerm');
+    var fullInput = document.getElementById('fullTerm');
+    var shortInput = document.getElementById('shortTerm');
 
-    const full = fullInput.value.trim();
-    const short = shortInput.value.trim();
+    var full = fullInput.value.trim();
+    var short_ = shortInput.value.trim();
 
-    if (!full || !short) {
+    if (!full || !short_) {
         alert("Vui lòng nhập đầy đủ thông tin!");
         return;
     }
 
-    abbrevRules.push({ full, short });
+    abbrevRules.push({ full: full, short: short_ });
     saveAbbrevRules();
 
     fullInput.value = '';
@@ -224,30 +198,30 @@ function removeAbbrevRule(idx) {
 }
 
 async function replaceAbbreviations() {
-    const statusDiv = document.getElementById('abbrevStatus');
+    var statusDiv = document.getElementById('abbrevStatus');
     statusDiv.className = 'status-msg';
     statusDiv.innerText = 'Đang thay thế từ viết tắt...';
 
-    const scope = document.querySelector('input[name="abbrevScope"]:checked').value;
-
     try {
-        await Word.run(async (context) => {
-            let range = scope === 'selection' ? context.document.getSelection() : context.document.body;
-            let totalReplaced = 0;
+        await Word.run(async function(context) {
+            var range = getRange(context, 'abbrevScope');
+            var totalReplaced = 0;
 
-            for (const rule of abbrevRules) {
-                const searchResults = range.search(rule.full, { matchCase: false, matchWholeWord: false });
+            for (var ri = 0; ri < abbrevRules.length; ri++) {
+                var rule = abbrevRules[ri];
+                var searchResults = range.search(rule.full, { matchCase: false, matchWholeWord: false });
                 searchResults.load('items');
                 await context.sync();
 
-                for (let i = 0; i < searchResults.items.length; i++) {
+                for (var i = 0; i < searchResults.items.length; i++) {
                     searchResults.items[i].insertText(rule.short, Word.InsertLocation.replace);
                     totalReplaced++;
                 }
             }
 
+            await context.sync();
             statusDiv.className = 'status-msg success';
-            statusDiv.innerText = `Đã thay thế ${totalReplaced} từ viết tắt!`;
+            statusDiv.innerText = 'Đã thay thế ' + totalReplaced + ' từ viết tắt!';
         });
     } catch (err) {
         console.error(err);
@@ -256,88 +230,62 @@ async function replaceAbbreviations() {
     }
 }
 
-// -------------------------------------------------------------
+// ============================================================
 // 3. TÍNH NĂNG RÀ SOÁT CHÍNH TẢ TIẾNG VIỆT
-// -------------------------------------------------------------
-const commonVietnameseErrors = [
-    // Phụ âm đầu / Chính tả từ ghép phổ biến
-    { error: /\bsản xuất\b/gi, correct: "sản xuất", desc: "Đúng chính tả" },
-    { error: /\bxản xuất\b/gi, correct: "sản xuất", desc: "Sai chính tả 'x/s'" },
-    { error: /\bsơ xuất\b/gi, correct: "sơ suất", desc: "Sai chính tả 'xuất/suất'" },
-    { error: /\bsơ xuất\b/gi, correct: "sơ suất", desc: "Sai chính tả 'xuất/suất'" },
-    { error: /\bchỉn chu\b/gi, correct: "chỉn chu", desc: "Đúng chính tả" },
-    { error: /\bchỉnh chu\b/gi, correct: "chỉn chu", desc: "Sai chính tả 'chỉnh chu -> chỉn chu'" },
-    { error: /\bsuôn sẻ\b/gi, correct: "suôn sẻ", desc: "Đúng chính tả" },
-    { error: /\bsuôn sẽ\b/gi, correct: "suôn sẻ", desc: "Sai dấu hỏi/nã 'sẽ -> sẻ'" },
-    { error: /\bthấu đáo\b/gi, correct: "thấu đáo", desc: "Đúng chính tả" },
-    { error: /\bđáo để\b/gi, correct: "đáo để", desc: "Đúng chính tả" },
-    { error: /\bđã đành\b/gi, correct: "đã đành", desc: "Đúng chính tả" },
-    { error: /\bcụm từ\b/gi, correct: "cụm từ", desc: "Đúng" },
-    { error: /\bcủng cố\b/gi, correct: "củng cố", desc: "Đúng" },
-    { error: /\bcũng cố\b/gi, correct: "củng cố", desc: "Sai dấu hỏi/ngã 'cũng -> củng'" },
-    { error: /\bđột xuất\b/gi, correct: "đột xuất", desc: "Đúng" },
-    { error: /\bđột suất\b/gi, correct: "đột xuất", desc: "Sai chính tả 'suất -> xuất'" },
-    { error: /\bxác suất\b/gi, correct: "xác suất", desc: "Đúng" },
-    { error: /\bxác xuất\b/gi, correct: "xác suất", desc: "Sai chính tả 'xuất -> suất'" },
-    { error: /\bnăng suất\b/gi, correct: "năng suất", desc: "Đúng" },
-    { error: /\bnăng xuất\b/gi, correct: "năng suất", desc: "Sai chính tả 'xuất -> suất'" },
-    { error: /\btham quan\b/gi, correct: "tham quan", desc: "Đúng" },
-    { error: /\btham quan\b/gi, correct: "tham quan", desc: "Đúng" },
-    { error: /\bthăm quan\b/gi, correct: "tham quan", desc: "Sai chính tả 'thăm quan -> tham quan'" },
-    { error: /\bchẩn đoán\b/gi, correct: "chẩn đoán", desc: "Đúng" },
-    { error: /\bchuẩn đoán\b/gi, correct: "chẩn đoán", desc: "Sai chính tả 'chuẩn -> chẩn'" },
-    { error: /\btrút bỏ\b/gi, correct: "trút bỏ", desc: "Đúng" },
-    { error: /\btrút giận\b/gi, correct: "trút giận", desc: "Đúng" },
-    { error: /\brút kinh nghiệm\b/gi, correct: "rút kinh nghiệm", desc: "Đúng" },
-    { error: /\btrút kinh nghiệm\b/gi, correct: "rút kinh nghiệm", desc: "Sai chính tả 'trút -> rút'" },
-    { error: /\bxuất sắc\b/gi, correct: "xuất sắc", desc: "Đúng" },
-    { error: /\bsuất sắc\b/gi, correct: "xuất sắc", desc: "Sai chính tả 'suất -> xuất'" },
-    { error: /\bxuất xắc\b/gi, correct: "xuất sắc", desc: "Sai chính tả 'xắc -> sắc'" },
-    { error: /\bsuất xắc\b/gi, correct: "xuất sắc", desc: "Sai chính tả 'suất xắc -> xuất sắc'" }
+// ============================================================
+var commonVietnameseErrors = [
+    // Phụ âm x/s
+    { err: 'xản xuất', fix: 'sản xuất', desc: "Sai 'x' → 's'" },
+    { err: 'sơ xuất', fix: 'sơ suất', desc: "Sai 'xuất' → 'suất'" },
+    { err: 'đột suất', fix: 'đột xuất', desc: "Sai 'suất' → 'xuất'" },
+    { err: 'xác xuất', fix: 'xác suất', desc: "Sai 'xuất' → 'suất'" },
+    { err: 'năng xuất', fix: 'năng suất', desc: "Sai 'xuất' → 'suất'" },
+    { err: 'suất sắc', fix: 'xuất sắc', desc: "Sai 'suất' → 'xuất'" },
+    { err: 'xuất xắc', fix: 'xuất sắc', desc: "Sai 'xắc' → 'sắc'" },
+    { err: 'suất xắc', fix: 'xuất sắc', desc: "Sai 'suất xắc' → 'xuất sắc'" },
+
+    // Phụ âm ch/tr, th
+    { err: 'chuẩn đoán', fix: 'chẩn đoán', desc: "Sai 'chuẩn' → 'chẩn'" },
+    { err: 'thăm quan', fix: 'tham quan', desc: "Sai 'thăm' → 'tham'" },
+    { err: 'chỉnh chu', fix: 'chỉn chu', desc: "Sai 'chỉnh' → 'chỉn'" },
+    { err: 'trút kinh nghiệm', fix: 'rút kinh nghiệm', desc: "Sai 'trút' → 'rút'" },
+
+    // Dấu hỏi / ngã
+    { err: 'suôn sẽ', fix: 'suôn sẻ', desc: "Sai dấu ngã → hỏi" },
+    { err: 'cũng cố', fix: 'củng cố', desc: "Sai dấu ngã → hỏi" },
+    { err: 'dể dàng', fix: 'dễ dàng', desc: "Sai dấu hỏi → ngã" },
+    { err: 'bổ xung', fix: 'bổ sung', desc: "Sai 'xung' → 'sung'" },
+
+    // Từ ghép sai phổ biến
+    { err: 'vô hình chung', fix: 'vô hình trung', desc: "Sai 'chung' → 'trung'" },
+    { err: 'tựu chung', fix: 'tựu trung', desc: "Sai 'chung' → 'trung'" },
+    { err: 'chín mùi', fix: 'chín muồi', desc: "Sai 'mùi' → 'muồi'" },
+    { err: 'khoảng khắc', fix: 'khoảnh khắc', desc: "Sai 'khoảng' → 'khoảnh'" }
 ];
 
 async function checkSpelling() {
-    const resultsDiv = document.getElementById('spellResults');
+    var resultsDiv = document.getElementById('spellResults');
     resultsDiv.innerHTML = '<div class="status-msg">Đang rà soát chính tả...</div>';
 
-    const scope = document.querySelector('input[name="spellScope"]:checked').value;
-
     try {
-        await Word.run(async (context) => {
-            let range = scope === 'selection' ? context.document.getSelection() : context.document.body;
+        await Word.run(async function(context) {
+            var range = getRange(context, 'spellScope');
             range.load('text');
             await context.sync();
 
-            const text = range.text;
-            let findings = [];
+            var text = range.text || '';
+            var findings = [];
 
-            // Quét các quy tắc sai chính tả
-            for (const item of commonVietnameseErrors) {
-                // Chỉ lấy những quy tắc là lỗi sai
-                if (item.error.source.includes('chuẩn đoán') || 
-                    item.error.source.includes('thăm quan') ||
-                    item.error.source.includes('chỉnh chu') ||
-                    item.error.source.includes('sơ xuất') ||
-                    item.error.source.includes('suôn sẽ') ||
-                    item.error.source.includes('cũng cố') ||
-                    item.error.source.includes('đột suất') ||
-                    item.error.source.includes('xác xuất') ||
-                    item.error.source.includes('năng xuất') ||
-                    item.error.source.includes('trút kinh nghiệm') ||
-                    item.error.source.includes('suất sắc') ||
-                    item.error.source.includes('xuất xắc') ||
-                    item.error.source.includes('suất xắc') ||
-                    item.error.source.includes('xản xuất')) {
-                    
-                    let match;
-                    const regex = new RegExp(item.error, 'gi');
-                    while ((match = regex.exec(text)) !== null) {
-                        findings.push({
-                            original: match[0],
-                            correct: item.correct,
-                            desc: item.desc
-                        });
-                    }
+            for (var i = 0; i < commonVietnameseErrors.length; i++) {
+                var item = commonVietnameseErrors[i];
+                var regex = new RegExp(escapeRegex(item.err), 'gi');
+                var match;
+                while ((match = regex.exec(text)) !== null) {
+                    findings.push({
+                        original: match[0],
+                        correct: item.fix,
+                        desc: item.desc
+                    });
                 }
             }
 
@@ -349,40 +297,87 @@ async function checkSpelling() {
     }
 }
 
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function renderSpellFindings(findings) {
-    const resultsDiv = document.getElementById('spellResults');
+    var resultsDiv = document.getElementById('spellResults');
     if (findings.length === 0) {
         resultsDiv.innerHTML = '<div class="status-msg success">🎉 Không phát hiện lỗi chính tả phổ biến nào!</div>';
         return;
     }
 
-    resultsDiv.innerHTML = `<div class="status-msg error">Phát hiện ${findings.length} nghi vấn chính tả:</div>`;
+    var html = '<div class="status-msg error">Phát hiện ' + findings.length + ' nghi vấn chính tả:</div>';
+    html += '<button class="btn btn-primary" style="margin-top:6px;margin-bottom:8px" onclick="fixAllSpelling()">🔧 Sửa tất cả ' + findings.length + ' lỗi</button>';
 
-    findings.forEach((item, idx) => {
-        const div = document.createElement('div');
-        div.className = 'spell-item';
-        div.innerHTML = `
-            <div>Từ phát hiện: <span class="original">${item.original}</span></div>
-            <div>Gợi ý sửa: <span class="suggestion">${item.correct}</span> (${item.desc})</div>
-            <div class="spell-actions">
-                <button class="btn-sm" onclick="fixSingleSpell('${item.original}', '${item.correct}')">Sửa lỗi này</button>
-            </div>
-        `;
-        resultsDiv.appendChild(div);
+    findings.forEach(function(item) {
+        html += '<div class="spell-item">';
+        html += '<div>Từ phát hiện: <span class="original">' + item.original + '</span></div>';
+        html += '<div>Gợi ý sửa: <span class="suggestion">' + item.correct + '</span>';
+        if (item.desc) html += ' (' + item.desc + ')';
+        html += '</div>';
+        html += '<div class="spell-actions">';
+        html += "<button class=\"btn-sm\" onclick=\"fixSingleSpell('" + item.original.replace(/'/g, "\\'") + "', '" + item.correct.replace(/'/g, "\\'") + "')\">Sửa lỗi này</button>";
+        html += '</div></div>';
     });
+
+    resultsDiv.innerHTML = html;
 }
 
 async function fixSingleSpell(original, correct) {
     try {
-        await Word.run(async (context) => {
-            const scope = document.querySelector('input[name="spellScope"]:checked').value;
-            let range = scope === 'selection' ? context.document.getSelection() : context.document.body;
-
-            const searchResults = range.search(original, { matchCase: false });
+        await Word.run(async function(context) {
+            var range = getRange(context, 'spellScope');
+            var searchResults = range.search(original, { matchCase: false, matchWholeWord: false });
             searchResults.load('items');
             await context.sync();
 
-// Gắn hàm lên window để HTML gọi trực tiếp không bị lỗi scope
+            for (var i = 0; i < searchResults.items.length; i++) {
+                searchResults.items[i].insertText(correct, Word.InsertLocation.replace);
+            }
+            await context.sync();
+
+            // Quét lại sau khi sửa
+            await checkSpelling();
+        });
+    } catch (err) {
+        console.error(err);
+        alert('Lỗi sửa chính tả: ' + (err.message || err));
+    }
+}
+
+async function fixAllSpelling() {
+    try {
+        await Word.run(async function(context) {
+            var range = getRange(context, 'spellScope');
+            var count = 0;
+
+            for (var i = 0; i < commonVietnameseErrors.length; i++) {
+                var item = commonVietnameseErrors[i];
+                var searchResults = range.search(item.err, { matchCase: false, matchWholeWord: false });
+                searchResults.load('items');
+                await context.sync();
+
+                for (var j = 0; j < searchResults.items.length; j++) {
+                    searchResults.items[j].insertText(item.fix, Word.InsertLocation.replace);
+                    count++;
+                }
+            }
+
+            await context.sync();
+            var resultsDiv = document.getElementById('spellResults');
+            resultsDiv.innerHTML = '<div class="status-msg success">🎉 Đã tự động sửa thành công ' + count + ' lỗi chính tả!</div>';
+        });
+    } catch (err) {
+        console.error(err);
+        alert("Lỗi: " + (err.message || err));
+    }
+}
+
+// ============================================================
+// GẮN HÀM LÊN WINDOW ĐỂ HTML ONCLICK GỌI ĐƯỢC
+// ============================================================
 window.switchTab = switchTab;
 window.formatDates = formatDates;
 window.addAbbrevRule = addAbbrevRule;
@@ -391,38 +386,3 @@ window.replaceAbbreviations = replaceAbbreviations;
 window.checkSpelling = checkSpelling;
 window.fixSingleSpell = fixSingleSpell;
 window.fixAllSpelling = fixAllSpelling;
-
-async function fixAllSpelling() {
-    try {
-        await Word.run(async (context) => {
-            const scope = document.querySelector('input[name="spellScope"]:checked').value;
-            let range = scope === 'selection' ? context.document.getSelection() : context.document.body;
-
-            range.load('text');
-            await context.sync();
-
-            let count = 0;
-            const text = range.text || "";
-
-            for (const item of commonVietnameseErrors) {
-                if (item.error.test(text)) {
-                    const searchResults = range.search(item.error.source, { matchCase: false, matchWholeWord: false });
-                    searchResults.load('items');
-                    await context.sync();
-
-                    for (let i = 0; i < searchResults.items.length; i++) {
-                        searchResults.items[i].insertText(item.correct, Word.InsertLocation.replace);
-                        count++;
-                    }
-                }
-            }
-
-            const resultsDiv = document.getElementById('spellResults');
-            resultsDiv.innerHTML = `<div class="status-msg success">🎉 Đã tự động sửa thành công ${count} lỗi chính tả!</div>`;
-        });
-    } catch (err) {
-        console.error(err);
-        alert("Lỗi: " + (err.message || err));
-    }
-}
-

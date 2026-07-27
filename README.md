@@ -9,31 +9,111 @@ Bộ công cụ **Word Web Add-in** hỗ trợ 3 tính năng quan trọng:
 2. **Thay thế từ khóa thành từ viết tắt** (Rút gọn văn bản):
    - Cho phép lưu và quản lý bảng rule viết tắt (VD: `Cộng hòa Xã hội Chủ nghĩa Việt Nam` ➔ `CHXHCNVN`, `Thành phố` ➔ `TP.`).
    - Hỗ trợ thay thế toàn bộ hoặc vùng chọn.
+   - Lưu rule vào localStorage (không mất khi đóng Word).
 3. **Rà soát chính tả Tiếng Việt**:
-   - Nhận diện các lỗi chính tả phổ biến (dấu hỏi/ngã, phụ âm x/s, ch/tr, từ ghép sai như *chuẩn đoán* ➔ *chẩn đoán*, *thăm quan* ➔ *tham quan*...).
+   - Nhận diện các lỗi chính tả phổ biến (dấu hỏi/ngã, phụ âm x/s, ch/tr, từ ghép sai).
+   - Hỗ trợ **sửa từng lỗi** hoặc **sửa tất cả** với một click.
 
 ---
 
-## 🌟 CÁCH ĐẮC ĐỊA NHẤT: Thử Nghiệm Ngay Trên Word Online (Web)
+## 📁 Cấu trúc thư mục
 
-Do chính sách máy tính cơ quan/công ty khóa cả Registry lẫn quyền Chia sẻ (Share) trên Word Desktop, cách **nhanh nhất 100% thành công** là thử nghiệm qua **Word Online (Trình duyệt)**:
+```
+Word Add-in/
+├── manifest.xml           ← File khai báo add-in (upload vào Word)
+├── app_standalone.html    ← Giao diện chính (single-file, host trên CDN)
+├── app.js                 ← JavaScript cho bản local development
+├── index.html             ← HTML cho bản local development
+├── style.css              ← CSS cho bản local development
+├── commands.html           ← Commands page (Office.js)
+├── package.json           ← npm config
+├── assets/
+│   ├── icon-16.png        ← Icon 16x16 cho Ribbon
+│   ├── icon-32.png        ← Icon 32x32 cho Ribbon
+│   └── icon-80.png        ← Icon 80x80 cho Ribbon
+└── README.md              ← File này
+```
 
-### Các bước thực hiện:
+---
 
-1. **Mở Word Online**:
-   Truy cập [https://word.office.com](https://word.office.com) (Đăng nhập tài khoản Microsoft cá nhân hoặc công ty).
+## 🖥️ CÁCH CÀI ĐẶT TRÊN WORD 365 DESKTOP
 
-2. **Mở một văn bản bất kỳ**:
-   Tạo mới một Tài liệu trống (Blank document).
+### Bước 1: Push toàn bộ file lên GitHub
 
-3. **Chèn Add-in**:
-   - Nhấp tab **Insert** (Chèn) trên thanh công cụ.
-   - Nhấp chọn nút **Add-ins** (Tệp bổ sung) ➔ Chọn **More Add-ins** (Add-in khác).
-   - Ở góc trên cùng bên phải cửa sổ pop-up, bấm nút **Upload My Add-in** (Tải lên Add-in của tôi).
-   - Chọn đường dẫn file `manifest.xml` tại:
-     `C:\Users\binhnt.MARKET_CLEARING\Dropbox\NGHIEN CUU\Word Add-in\manifest.xml`
+Đảm bảo repo `binhnt-vn/Hotrotiengviet` đã có đầy đủ các file:
+- `app_standalone.html`
+- `assets/icon-16.png`
+- `assets/icon-32.png`
+- `assets/icon-80.png`
 
-4. **Sử dụng**:
-   Tab **"Xử lý Tiếng Việt"** và nút **"Mở Tiện Ích"** sẽ xuất hiện ngay lập tức trên thanh Ribbon!
+```bash
+cd "C:\Users\binhnt.MARKET_CLEARING\Dropbox\NGHIEN CUU\Word Add-in"
+git add .
+git commit -m "Fix add-in: syntax errors, manifest, icons"
+git push origin main
+```
 
+### Bước 2: Đợi CDN cập nhật (1-2 phút)
 
+File được host qua jsDelivr CDN:
+```
+https://cdn.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html
+```
+
+> **Lưu ý:** Nếu đã push trước đó, có thể cần purge cache CDN bằng cách truy cập:
+> `https://purge.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html`
+
+### Bước 3: Sideload manifest vào Word 365 Desktop
+
+**Cách 1: Upload trực tiếp (đơn giản nhất)**
+1. Mở **Word 365 Desktop**
+2. Vào tab **Insert** (Chèn) trên Ribbon
+3. Bấm **Get Add-ins** (Nhận Add-in) hoặc **My Add-ins**
+4. Chọn tab **My Add-ins** (Add-in của tôi)
+5. Bấm **Upload My Add-in** (Tải lên Add-in của tôi)
+6. Chọn file `manifest.xml` từ thư mục dự án
+7. Bấm **Upload**
+
+**Cách 2: Sideload qua thư mục Wef (nếu Cách 1 không khả dụng)**
+1. Mở File Explorer, vào đường dẫn:
+   ```
+   %LOCALAPPDATA%\Microsoft\Office\16.0\Wef
+   ```
+   (Nếu thư mục `Wef` chưa có, tạo mới)
+2. Copy file `manifest.xml` vào thư mục này
+3. Khởi động lại Word
+
+**Cách 3: Dùng Share folder catalog**
+1. Tạo một thư mục chia sẻ mạng (VD: `\\localhost\AddIns`)
+2. Copy `manifest.xml` vào thư mục đó
+3. Trong Word: **File** → **Options** → **Trust Center** → **Trust Center Settings** → **Trusted Add-in Catalogs**
+4. Thêm URL thư mục chia sẻ, tick **Show in Menu**
+5. Khởi động lại Word
+
+### Bước 4: Sử dụng
+
+Sau khi cài đặt thành công:
+- Nút **"Mở Tiện Ích"** sẽ xuất hiện trong nhóm **"Xử lý Tiếng Việt"** trên tab **Home**
+- Bấm nút để mở Task Pane bên phải với 3 tab tính năng
+
+---
+
+## 🌐 CÀI ĐẶT TRÊN WORD ONLINE (Web)
+
+1. Truy cập [https://word.office.com](https://word.office.com)
+2. Mở hoặc tạo mới một tài liệu
+3. Vào **Insert** → **Add-ins** → **Upload My Add-in**
+4. Chọn file `manifest.xml`
+5. Add-in sẽ mở ngay lập tức
+
+---
+
+## ⚠️ Xử lý sự cố
+
+| Vấn đề | Giải pháp |
+|--------|----------|
+| Task Pane trắng | Kiểm tra CDN URL đã push file chưa. Thử mở URL trực tiếp trên trình duyệt. |
+| Lỗi "manifest invalid" | Đảm bảo manifest.xml đúng định dạng XML. Kiểm tra icon URLs có truy cập được. |
+| Không thấy nút trên Ribbon | Thử đóng và mở lại Word. Hoặc dùng Cách 2 (Wef folder). |
+| Lỗi JavaScript | Mở DevTools (F12) trong Task Pane để xem Console log. |
+| CDN không cập nhật | Purge cache: `https://purge.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html` |

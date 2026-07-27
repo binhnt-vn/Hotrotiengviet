@@ -10,14 +10,14 @@
 </head>
 <body>
     <header class="app-header">
-        <h1>Tiện ích Tiếng Việt</h1>
+        <h1>📝 Tiện ích Tiếng Việt</h1>
         <p class="subtitle">Tùy chọn xử lý & tối ưu hóa văn bản</p>
     </header>
 
     <nav class="nav-tabs">
-        <button class="tab-btn active" onclick="switchTab('date-tab')">📅 Ngày tháng</button>
-        <button class="tab-btn" onclick="switchTab('abbrev-tab')">🔤 Từ viết tắt</button>
-        <button class="tab-btn" onclick="switchTab('spell-tab')">🔍 Chính tả</button>
+        <button class="tab-btn active" data-tab="date-tab" onclick="switchTab('date-tab')">📅 Ngày tháng</button>
+        <button class="tab-btn" data-tab="abbrev-tab" onclick="switchTab('abbrev-tab')">🔤 Từ viết tắt</button>
+        <button class="tab-btn" data-tab="spell-tab" onclick="switchTab('spell-tab')">🔍 Chính tả</button>
     </nav>
 
     <main class="content-container">
@@ -84,7 +84,7 @@
         <section id="spell-tab" class="tab-content">
             <div class="card">
                 <h3>Rà soát chính tả Tiếng Việt</h3>
-                <p class="desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s, c/k), vắt dấu, sai chính tả phổ biến.</p>
+                <p class="desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s, c/k), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.</p>
 
                 <div class="scope-selector">
                     <label><input type="radio" name="spellScope" value="selection" checked> Vùng đang chọn</label>
@@ -92,7 +92,7 @@
                 </div>
 
                 <button class="btn btn-primary" onclick="checkSpelling()">Rà soát chính tả</button>
-                
+
                 <div id="spellResults" class="spell-results">
                     <!-- Dynamic findings -->
                 </div>
