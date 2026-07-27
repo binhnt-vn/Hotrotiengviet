@@ -23,7 +23,7 @@
   </Hosts>
 
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://binhnt-vn.github.io/Hotrotiengviet/manifest.xml" />
+    <SourceLocation DefaultValue="https://cdn.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html" />
   </DefaultSettings>
 
 
