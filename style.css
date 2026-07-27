@@ -1,0 +1,245 @@
+:root {
+    --primary-color: #0078d4;
+    --primary-hover: #005a9e;
+    --bg-color: #f8f9fa;
+    --card-bg: #ffffff;
+    --text-color: #323130;
+    --border-color: #e1dfdd;
+    --success-color: #107c41;
+    --warning-color: #d13438;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-size: 13px;
+    padding: 12px;
+}
+
+.app-header {
+    margin-bottom: 12px;
+    border-bottom: 2px solid var(--primary-color);
+    padding-bottom: 8px;
+}
+
+.app-header h1 {
+    font-size: 16px;
+    color: var(--primary-color);
+}
+
+.subtitle {
+    font-size: 11px;
+    color: #605e5c;
+}
+
+.nav-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 12px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 8px 4px;
+    background: #e1dfdd;
+    border: none;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 11px;
+    color: #605e5c;
+    transition: all 0.2s;
+}
+
+.tab-btn.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card h3 {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.desc {
+    font-size: 12px;
+    color: #605e5c;
+    margin-bottom: 10px;
+}
+
+.rules-list {
+    background: #f3f2f1;
+    padding: 8px 12px;
+    border-radius: 4px;
+    list-style: none;
+    margin-bottom: 12px;
+}
+
+.rules-list li {
+    font-size: 11px;
+    margin-bottom: 4px;
+}
+
+code {
+    background: #e1dfdd;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+}
+
+.scope-selector {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    font-size: 12px;
+}
+
+.btn {
+    width: 100%;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.2s;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-secondary {
+    background: #605e5c;
+    color: white;
+}
+
+.status-msg {
+    margin-top: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-msg.success {
+    color: var(--success-color);
+}
+
+.status-msg.error {
+    color: var(--warning-color);
+}
+
+/* Abbreviation Table */
+.abbrev-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.abbrev-input-group input {
+    padding: 6px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+}
+
+.table-wrapper {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 11px;
+}
+
+th, td {
+    padding: 6px;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+}
+
+th {
+    background: #f3f2f1;
+}
+
+.btn-del {
+    background: var(--warning-color);
+    color: white;
+    border: none;
+    padding: 2px 6px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+/* Spell Results */
+.spell-results {
+    margin-top: 12px;
+    max-height: 220px;
+    overflow-y: auto;
+}
+
+.spell-item {
+    background: #fff4ce;
+    border-left: 3px solid #ffb900;
+    padding: 8px;
+    margin-bottom: 6px;
+    border-radius: 2px;
+    font-size: 11px;
+}
+
+.spell-item .original {
+    font-weight: bold;
+    color: var(--warning-color);
+}
+
+.spell-item .suggestion {
+    color: var(--success-color);
+    font-weight: bold;
+}
+
+.spell-actions {
+    margin-top: 4px;
+    display: flex;
+    gap: 6px;
+}
+
+.btn-sm {
+    padding: 2px 8px;
+    font-size: 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    border: none;
+    background: var(--primary-color);
+    color: white;
+}
