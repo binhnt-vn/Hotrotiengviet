@@ -71,19 +71,22 @@ async function formatDates() {
             var patterns = [
                 {
                     reg: /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi,
-                    rep: function(m, d, mth, y) { return parseInt(d) + '/' + parseInt(mth) + '/' + y; }
+                    rep: function(m, d, mth, y) { return parseInt(d, 10) + '/' + parseInt(mth, 10) + '/' + y; }
                 },
                 {
                     reg: /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})/gi,
-                    rep: function(m, d, mth) { return 'ngày ' + parseInt(d) + '/' + parseInt(mth); }
+                    rep: function(m, d, mth) {
+                        var prefix = (m.charAt(0) === 'N') ? 'Ngày ' : 'ngày ';
+                        return prefix + parseInt(d, 10) + '/' + parseInt(mth, 10);
+                    }
                 },
                 {
                     reg: /tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi,
-                    rep: function(m, mth, y) { return 'T' + parseInt(mth) + '/' + y; }
+                    rep: function(m, mth, y) { return 'T' + parseInt(mth, 10) + '/' + y; }
                 },
                 {
                     reg: /tháng\s+(\d{1,2})/gi,
-                    rep: function(m, mth) { return 'T' + parseInt(mth); }
+                    rep: function(m, mth) { return 'T' + parseInt(mth, 10); }
                 }
             ];
 
