@@ -202,6 +202,28 @@ th {
     cursor: pointer;
 }
 
+.btn-edit {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 2px 5px;
+    border-radius: 3px;
+    cursor: pointer;
+    margin-right: 2px;
+}
+
+.btn-edit:hover {
+    background: var(--primary-hover);
+}
+
+.input-edit {
+    width: 100%;
+    padding: 3px 5px;
+    border: 1px solid var(--border-color);
+    border-radius: 3px;
+    font-size: 11px;
+}
+
 /* Spell Results */
 .spell-results {
     margin-top: 12px;

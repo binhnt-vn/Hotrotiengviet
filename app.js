@@ -140,6 +140,14 @@ var abbrevRules = [
     { full: "Ngân hàng Nhà nước", short: "NHNN" }
 ];
 
+function sortAbbrevRulesAlphabetically() {
+    if (abbrevRules && abbrevRules.length > 0) {
+        abbrevRules.sort(function(a, b) {
+            return a.full.localeCompare(b.full, 'vi', { sensitivity: 'base' });
+        });
+    }
+}
+
 function loadAbbrevRules() {
     try {
         var saved = localStorage.getItem('abbrevRules');
@@ -149,10 +157,12 @@ function loadAbbrevRules() {
     } catch (e) {
         console.warn('Cannot load from localStorage:', e);
     }
+    sortAbbrevRulesAlphabetically();
     renderAbbrevTable();
 }
 
 function saveAbbrevRules() {
+    sortAbbrevRulesAlphabetically();
     try {
         localStorage.setItem('abbrevRules', JSON.stringify(abbrevRules));
     } catch (e) {
@@ -161,6 +171,8 @@ function saveAbbrevRules() {
     renderAbbrevTable();
 }
 
+var editingAbbrevIdx = -1;
+
 function renderAbbrevTable() {
     var tbody = document.getElementById('abbrevList');
     if (!tbody) return;
@@ -168,12 +180,55 @@ function renderAbbrevTable() {
 
     abbrevRules.forEach(function(rule, idx) {
         var tr = document.createElement('tr');
-        tr.innerHTML =
-            '<td>' + rule.full + '</td>' +
-            '<td><strong>' + rule.short + '</strong></td>' +
-            '<td><button class="btn-del" onclick="removeAbbrevRule(' + idx + ')">Xóa</button></td>';
+        if (idx === editingAbbrevIdx) {
+            tr.innerHTML =
+                '<td><input type="text" id="editFullTerm" class="input-edit" value="' + escapeHtml(rule.full) + '"></td>' +
+                '<td><input type="text" id="editShortTerm" class="input-edit" value="' + escapeHtml(rule.short) + '"></td>' +
+                '<td style="text-align: center;">' +
+                '<button class="btn-edit" style="background:var(--success-color);" title="Lưu" onclick="saveEditAbbrevRule(' + idx + ')">💾</button>' +
+                '<button class="btn-del" title="Hủy" onclick="cancelEditAbbrevRule()">✕</button>' +
+                '</td>';
+        } else {
+            tr.innerHTML =
+                '<td>' + escapeHtml(rule.full) + '</td>' +
+                '<td><strong>' + escapeHtml(rule.short) + '</strong></td>' +
+                '<td style="text-align: center;">' +
+                '<button class="btn-edit" title="Sửa" onclick="editAbbrevRule(' + idx + ')">✏️</button>' +
+                '<button class="btn-del" title="Xóa" onclick="removeAbbrevRule(' + idx + ')">✕</button>' +
+                '</td>';
+        }
         tbody.appendChild(tr);
     });
+}
+
+function editAbbrevRule(idx) {
+    editingAbbrevIdx = idx;
+    renderAbbrevTable();
+}
+
+function cancelEditAbbrevRule() {
+    editingAbbrevIdx = -1;
+    renderAbbrevTable();
+}
+
+function saveEditAbbrevRule(idx) {
+    var fullInput = document.getElementById('editFullTerm');
+    var shortInput = document.getElementById('editShortTerm');
+    if (!fullInput || !shortInput) return;
+
+    var full = fullInput.value.trim();
+    var short_ = shortInput.value.trim();
+
+    if (!full || !short_) {
+        alert("Vui lòng nhập đầy đủ thông tin!");
+        return;
+    }
+
+    if (idx >= 0 && idx < abbrevRules.length) {
+        abbrevRules[idx] = { full: full, short: short_ };
+        editingAbbrevIdx = -1;
+        saveAbbrevRules();
+    }
 }
 
 function addAbbrevRule() {
@@ -293,8 +348,13 @@ async function replaceAbbreviations() {
             var range = getRange(context, 'abbrevScope');
             var totalReplaced = 0;
 
-            for (var ri = 0; ri < abbrevRules.length; ri++) {
-                var rule = abbrevRules[ri];
+            // Sắp xếp các cụm từ từ dài nhất đến ngắn nhất
+            var sortedRules = abbrevRules.slice().sort(function(a, b) {
+                return b.full.length - a.full.length;
+            });
+
+            for (var ri = 0; ri < sortedRules.length; ri++) {
+                var rule = sortedRules[ri];
                 var searchResults = range.search(rule.full, { matchCase: false, matchWholeWord: false });
                 searchResults.load('items');
                 await context.sync();
@@ -307,12 +367,12 @@ async function replaceAbbreviations() {
 
             await context.sync();
             statusDiv.className = 'status-msg success';
-            statusDiv.innerText = 'Đã thay thế ' + totalReplaced + ' từ viết tắt!';
+            statusDiv.innerText = '✅ Đã thay thế ' + totalReplaced + ' cụm từ viết tắt!';
         });
     } catch (err) {
         console.error(err);
         statusDiv.className = 'status-msg error';
-        statusDiv.innerText = 'Lỗi xử lý: ' + err.message;
+        statusDiv.innerText = 'Lỗi: ' + (err.message || err);
     }
 }
 
@@ -461,6 +521,16 @@ async function fixAllSpelling() {
     }
 }
 
+function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.appendChild(document.createTextNode(str || ''));
+    return div.innerHTML;
+}
+
+function escapeAttr(str) {
+    return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+}
+
 // ============================================================
 // GẮN HÀM LÊN WINDOW ĐỂ HTML ONCLICK GỌI ĐƯỢC
 // ============================================================
@@ -468,6 +538,11 @@ window.switchTab = switchTab;
 window.formatDates = formatDates;
 window.addAbbrevRule = addAbbrevRule;
 window.removeAbbrevRule = removeAbbrevRule;
+window.editAbbrevRule = editAbbrevRule;
+window.cancelEditAbbrevRule = cancelEditAbbrevRule;
+window.saveEditAbbrevRule = saveEditAbbrevRule;
+window.exportAbbrevRules = exportAbbrevRules;
+window.importAbbrevRules = importAbbrevRules;
 window.replaceAbbreviations = replaceAbbreviations;
 window.checkSpelling = checkSpelling;
 window.fixSingleSpell = fixSingleSpell;

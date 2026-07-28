@@ -93,6 +93,14 @@
             padding: 2px 6px; border-radius: 3px; cursor: pointer; font-size: 10px;
         }
         .btn-del:hover { background: #b02a2d; }
+        .btn-edit {
+            background: var(--primary); color: white; border: none;
+            padding: 2px 5px; border-radius: 3px; cursor: pointer; font-size: 10px; margin-right: 2px;
+        }
+        .btn-edit:hover { background: var(--primary-hover); }
+        .input-edit {
+            width: 100%; padding: 3px 5px; border: 1px solid var(--border); border-radius: 3px; font-size: 11px;
+        }
 
         /* Spell */
         .spell-results { margin-top: 10px; max-height: 220px; overflow-y: auto; }
@@ -160,7 +168,7 @@
         </div>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Cụm từ đầy đủ</th><th>Viết tắt</th><th>Xóa</th></tr></thead>
+                <thead><tr><th>Cụm từ đầy đủ</th><th>Viết tắt</th><th style="width: 75px; text-align: center;">Thao tác</th></tr></thead>
                 <tbody id="ruleBody"></tbody>
             </table>
         </div>
@@ -327,6 +335,14 @@
 
         var abbrevList = [];
 
+        function sortRulesAlphabetically() {
+            if (abbrevList && abbrevList.length > 0) {
+                abbrevList.sort(function(a, b) {
+                    return a.full.localeCompare(b.full, 'vi', { sensitivity: 'base' });
+                });
+            }
+        }
+
         function loadRules() {
             try {
                 var saved = localStorage.getItem('vn_abbrev_rules');
@@ -338,16 +354,20 @@
             } catch (e) {
                 abbrevList = defaultRules.slice();
             }
+            sortRulesAlphabetically();
             renderTable();
         }
 
         function saveRules() {
+            sortRulesAlphabetically();
             try {
                 localStorage.setItem('vn_abbrev_rules', JSON.stringify(abbrevList));
             } catch (e) {
                 console.warn('Cannot save to localStorage:', e);
             }
         }
+
+        var editingIdx = -1;
 
         function renderTable() {
             var tbody = document.getElementById('ruleBody');
@@ -356,11 +376,56 @@
             for (var i = 0; i < abbrevList.length; i++) {
                 var rule = abbrevList[i];
                 var tr = document.createElement('tr');
-                tr.innerHTML =
-                    '<td>' + escapeHtml(rule.full) + '</td>' +
-                    '<td><strong>' + escapeHtml(rule.short) + '</strong></td>' +
-                    '<td><button class="btn-del" onclick="deleteRule(' + i + ')">✕</button></td>';
+
+                if (i === editingIdx) {
+                    tr.innerHTML =
+                        '<td><input type="text" id="editFullInp" class="input-edit" value="' + escapeAttr(rule.full) + '"></td>' +
+                        '<td><input type="text" id="editShortInp" class="input-edit" value="' + escapeAttr(rule.short) + '"></td>' +
+                        '<td style="text-align: center;">' +
+                        '<button class="btn-edit" style="background:var(--success);" title="Lưu thay đổi" onclick="saveEditRule(' + i + ')">💾</button>' +
+                        '<button class="btn-del" title="Hủy" onclick="cancelEditRule()">✕</button>' +
+                        '</td>';
+                } else {
+                    tr.innerHTML =
+                        '<td>' + escapeHtml(rule.full) + '</td>' +
+                        '<td><strong>' + escapeHtml(rule.short) + '</strong></td>' +
+                        '<td style="text-align: center;">' +
+                        '<button class="btn-edit" title="Sửa quy tắc này" onclick="editRule(' + i + ')">✏️</button>' +
+                        '<button class="btn-del" title="Xóa quy tắc này" onclick="deleteRule(' + i + ')">✕</button>' +
+                        '</td>';
+                }
                 tbody.appendChild(tr);
+            }
+        }
+
+        function editRule(idx) {
+            editingIdx = idx;
+            renderTable();
+        }
+
+        function cancelEditRule() {
+            editingIdx = -1;
+            renderTable();
+        }
+
+        function saveEditRule(idx) {
+            var fullEl = document.getElementById('editFullInp');
+            var shortEl = document.getElementById('editShortInp');
+            if (!fullEl || !shortEl) return;
+
+            var f = fullEl.value.trim();
+            var s = shortEl.value.trim();
+
+            if (!f || !s) {
+                alert('Vui lòng nhập đầy đủ thông tin cụm từ và từ viết tắt!');
+                return;
+            }
+
+            if (idx >= 0 && idx < abbrevList.length) {
+                abbrevList[idx] = { full: f, short: s };
+                editingIdx = -1;
+                saveRules();
+                renderTable();
             }
         }
 
@@ -494,11 +559,19 @@
                     var range = getRange(context, 'abbrevScope');
                     var total = 0;
 
-                    for (var ri = 0; ri < abbrevList.length; ri++) {
-                        var rule = abbrevList[ri];
+                    // Sắp xếp cụm từ từ dài nhất đến ngắn nhất để ưu tiên cụm từ dài trước
+                    var sortedRules = abbrevList.slice().sort(function(a, b) {
+                        return b.full.length - a.full.length;
+                    });
+
+                    for (var ri = 0; ri < sortedRules.length; ri++) {
+                        var rule = sortedRules[ri];
+                        // matchCase: false -> Tìm kiếm KHÔNG phân biệt chữ hoa/thường đối với cụm từ đầy đủ
+                        // insertText(rule.short) -> Thay thế đúng định dạng chữ hoa/thường bản gốc của từ viết tắt
                         var res = range.search(rule.full, { matchCase: false, matchWholeWord: false });
                         res.load('items');
                         await context.sync();
+
                         for (var i = 0; i < res.items.length; i++) {
                             res.items[i].insertText(rule.short, Word.InsertLocation.replace);
                             total++;
