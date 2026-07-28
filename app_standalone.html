@@ -148,6 +148,11 @@
     <div id="tab-abbrev" class="tab-content">
         <p class="section-title">Thay thế từ khóa thành từ viết tắt</p>
         <p class="desc">Quản lý danh sách từ điển viết tắt và thay thế trong văn bản.</p>
+        <div style="display: flex; gap: 6px; margin-bottom: 8px;">
+            <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 11px;" onclick="exportRules()">📥 Xuất JSON</button>
+            <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 11px;" onclick="document.getElementById('importFile').click()">📤 Nhập JSON</button>
+            <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRules(event)">
+        </div>
         <div class="input-group">
             <input type="text" id="fullInp" placeholder="Cụm từ đầy đủ (VD: Thành phố)">
             <input type="text" id="shortInp" placeholder="Từ viết tắt (VD: TP.)">
@@ -384,6 +389,90 @@
                 saveRules();
                 renderTable();
             }
+        }
+
+        function exportRules() {
+            var msg = document.getElementById('abbrevMsg');
+            if (!abbrevList || abbrevList.length === 0) {
+                msg.className = 'status error';
+                msg.innerText = '⚠️ Danh sách từ điển đang trống!';
+                return;
+            }
+            try {
+                var jsonStr = JSON.stringify(abbrevList, null, 2);
+                var blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = "tu_dien_viet_tat.json";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                msg.className = 'status success';
+                msg.innerText = '✅ Đã xuất ' + abbrevList.length + ' quy tắc ra tệp tu_dien_viet_tat.json!';
+            } catch (err) {
+                console.error('exportRules error:', err);
+                msg.className = 'status error';
+                msg.innerText = '❌ Lỗi xuất tệp: ' + (err.message || err);
+            }
+        }
+
+        function importRules(event) {
+            var file = event.target.files[0];
+            var msg = document.getElementById('abbrevMsg');
+            if (!file) return;
+
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    var importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) {
+                        throw new Error('Cấu trúc tệp không hợp lệ (cần danh sách dạng mảng JSON).');
+                    }
+
+                    var addedCount = 0;
+                    var updatedCount = 0;
+
+                    for (var i = 0; i < importedData.length; i++) {
+                        var item = importedData[i];
+                        if (item && item.full && item.short) {
+                            var f = item.full.trim();
+                            var s = item.short.trim();
+                            var existingIdx = -1;
+
+                            for (var k = 0; k < abbrevList.length; k++) {
+                                if (abbrevList[k].full.toLowerCase() === f.toLowerCase()) {
+                                    existingIdx = k;
+                                    break;
+                                }
+                            }
+
+                            if (existingIdx >= 0) {
+                                abbrevList[existingIdx].short = s;
+                                updatedCount++;
+                            } else {
+                                abbrevList.push({ full: f, short: s });
+                                addedCount++;
+                            }
+                        }
+                    }
+
+                    saveRules();
+                    renderTable();
+
+                    msg.className = 'status success';
+                    msg.innerText = '✅ Nhập thành công! (Thêm mới: ' + addedCount + ', Cập nhật: ' + updatedCount + ')';
+                } catch (err) {
+                    console.error('importRules error:', err);
+                    msg.className = 'status error';
+                    msg.innerText = '❌ Lỗi nhập tệp: ' + (err.message || err);
+                } finally {
+                    event.target.value = '';
+                }
+            };
+            reader.readAsText(file);
         }
 
         async function runReplaceAbbrev() {

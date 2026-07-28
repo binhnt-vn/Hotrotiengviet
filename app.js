@@ -197,6 +197,89 @@ function removeAbbrevRule(idx) {
     saveAbbrevRules();
 }
 
+function exportAbbrevRules() {
+    var statusDiv = document.getElementById('abbrevStatus');
+    if (!abbrevRules || abbrevRules.length === 0) {
+        statusDiv.className = 'status-msg status-error';
+        statusDiv.innerText = '⚠️ Danh sách từ điển đang trống!';
+        return;
+    }
+    try {
+        var jsonStr = JSON.stringify(abbrevRules, null, 2);
+        var blob = new Blob([jsonStr], { type: "application/json;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = "tu_dien_viet_tat.json";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        statusDiv.className = 'status-msg status-success';
+        statusDiv.innerText = '✅ Đã xuất ' + abbrevRules.length + ' quy tắc ra tệp tu_dien_viet_tat.json!';
+    } catch (err) {
+        console.error('exportAbbrevRules error:', err);
+        statusDiv.className = 'status-msg status-error';
+        statusDiv.innerText = '❌ Lỗi xuất tệp: ' + (err.message || err);
+    }
+}
+
+function importAbbrevRules(event) {
+    var file = event.target.files[0];
+    var statusDiv = document.getElementById('abbrevStatus');
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            var importedData = JSON.parse(e.target.result);
+            if (!Array.isArray(importedData)) {
+                throw new Error('Cấu trúc tệp không hợp lệ (cần danh sách dạng mảng JSON).');
+            }
+
+            var addedCount = 0;
+            var updatedCount = 0;
+
+            for (var i = 0; i < importedData.length; i++) {
+                var item = importedData[i];
+                if (item && item.full && item.short) {
+                    var f = item.full.trim();
+                    var s = item.short.trim();
+                    var existingIdx = -1;
+
+                    for (var k = 0; k < abbrevRules.length; k++) {
+                        if (abbrevRules[k].full.toLowerCase() === f.toLowerCase()) {
+                            existingIdx = k;
+                            break;
+                        }
+                    }
+
+                    if (existingIdx >= 0) {
+                        abbrevRules[existingIdx].short = s;
+                        updatedCount++;
+                    } else {
+                        abbrevRules.push({ full: f, short: s });
+                        addedCount++;
+                    }
+                }
+            }
+
+            saveAbbrevRules();
+
+            statusDiv.className = 'status-msg status-success';
+            statusDiv.innerText = '✅ Nhập thành công! (Thêm mới: ' + addedCount + ', Cập nhật: ' + updatedCount + ')';
+        } catch (err) {
+            console.error('importAbbrevRules error:', err);
+            statusDiv.className = 'status-msg status-error';
+            statusDiv.innerText = '❌ Lỗi nhập tệp: ' + (err.message || err);
+        } finally {
+            event.target.value = '';
+        }
+    };
+    reader.readAsText(file);
+}
+
 async function replaceAbbreviations() {
     var statusDiv = document.getElementById('abbrevStatus');
     statusDiv.className = 'status-msg';

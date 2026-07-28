@@ -49,6 +49,12 @@
                 <h3>Thay thế từ khóa thành từ viết tắt</h3>
                 <p class="desc">Quản lý danh sách từ khóa và thay thế để rút ngắn văn bản.</p>
 
+                <div class="io-actions" style="display: flex; gap: 6px; margin-bottom: 10px;">
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="exportAbbrevRules()">📥 Xuất JSON</button>
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="document.getElementById('importAbbrevFile').click()">📤 Nhập JSON</button>
+                    <input type="file" id="importAbbrevFile" accept=".json" style="display: none;" onchange="importAbbrevRules(event)">
+                </div>
+
                 <div class="abbrev-input-group">
                     <input type="text" id="fullTerm" placeholder="Từ/Cụm từ đầy đủ (VD: Thành phố)">
                     <input type="text" id="shortTerm" placeholder="Từ viết tắt (VD: TP.)">

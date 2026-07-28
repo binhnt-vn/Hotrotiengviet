@@ -1,0 +1,16 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Testing & Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Certificates & Temp
+*.pem
+.env
+.env.local
+.DS_Store
+Thumbs.db

@@ -4,12 +4,13 @@
   "description": "Word Add-in xử lý chính tả, từ viết tắt và rút ngắn định dạng ngày tháng tiếng Việt",
   "main": "index.html",
   "scripts": {
-    "start": "office-addin-debugging start manifest.xml",
-    "stop": "office-addin-debugging stop manifest.xml",
+    "start": "npx office-addin-debugging start manifest.xml",
+    "stop": "npx office-addin-debugging stop manifest.xml",
     "serve": "npx http-server -p 3000 -S -C cert.pem -K key.pem"
   },
-  "dependencies": {},
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "office-addin-debugging": "^6.1.2",
+    "office-addin-manifest": "^2.1.6"
   }
 }
