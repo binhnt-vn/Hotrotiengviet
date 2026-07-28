@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "word-abbrev",
+  "compatibility_date": "2026-07-28",
+  "assets": {
+    "directory": ".",
+    "exclude": [
+      "node_modules/**",
+      ".git/**",
+      "package*.json",
+      "README.md",
+      "*.pem",
+      ".env*"
+    ]
+  }
+}

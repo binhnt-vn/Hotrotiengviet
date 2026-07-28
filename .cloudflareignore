@@ -1,0 +1,7 @@
+node_modules
+.git
+.github
+*.pem
+package.json
+package-lock.json
+README.md
