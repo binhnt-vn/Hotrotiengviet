@@ -1,119 +1,101 @@
-# Hướng Dẫn Cài Đặt & Sử Dụng Word Add-In (Xử Lý Tiếng Việt)
+# 📝 Word Web Add-in: Tiện Ích Xử Lý Tiếng Việt
 
-Bộ công cụ **Word Web Add-in** hỗ trợ 3 tính năng quan trọng:
-1. **Rút ngắn định dạng ngày tháng tiếng Việt**:
-   - `ngày 20 tháng 7 năm 2026` ➔ `20/7/2026`
-   - `ngày 20 tháng 7` ➔ `ngày 20/7`
-   - `tháng 7 năm 2026` ➔ `T7/2026`
-   - `tháng 7` ➔ `T7`
-2. **Thay thế từ khóa thành từ viết tắt** (Rút gọn văn bản):
-   - Cho phép lưu và quản lý bảng rule viết tắt (VD: `Cộng hòa Xã hội Chủ nghĩa Việt Nam` ➔ `CHXHCNVN`, `Thành phố` ➔ `TP.`).
-   - Hỗ trợ thay thế toàn bộ hoặc vùng chọn.
-   - Lưu rule vào localStorage (không mất khi đóng Word).
-3. **Rà soát chính tả Tiếng Việt**:
-   - Nhận diện các lỗi chính tả phổ biến (dấu hỏi/ngã, phụ âm x/s, ch/tr, từ ghép sai).
-   - Hỗ trợ **sửa từng lỗi** hoặc **sửa tất cả** với một click.
+Bộ công cụ **Word Web Add-in** hỗ trợ 3 nhóm tính năng xử lý văn bản tiếng Việt tối ưu cho Microsoft Word 365 (Desktop & Web):
 
 ---
 
-## 📁 Cấu trúc thư mục
+## 🌟 Tính Năng Nổi Bật
+
+### 1. 📅 Rút Ngắn Định Dạng Ngày Tháng
+Tự động tìm kiếm và quy đổi định dạng ngày tháng dài sang dạng viết tắt gọn gàng (hỗ trợ cả các số có số `0` ở đầu):
+* `ngày 20 tháng 07 năm 2026` ➔ `20/7/2026`
+* `ngày 20 tháng 07` ➔ `ngày 20/7`
+* `tháng 07 năm 2026` ➔ `T7/2026`
+* `tháng 07` ➔ `T7`
+
+### 2. 🔤 Quản Lý & Thay Thế Từ Viết Tắt
+* **Quản lý linh hoạt:** Thêm mới, **Chỉnh sửa trực tiếp (Inline Edit)**, Xóa quy tắc viết tắt.
+* **Xuất & Nhập từ điển (Export / Import):** Dễ dàng xuất danh sách từ điển ra tệp `tu_dien_viet_tat.json` hoặc nhập từ điển có sẵn để chia sẻ giữa các máy tính.
+* **Tự động sắp xếp A-Z:** Danh sách hiển thị tự động sắp xếp theo bảng chữ cái tiếng Việt giúp dễ dàng tra cứu.
+* **Thay thế thông minh:**
+  * Tìm kiếm không phân biệt chữ hoa/thường (`thành phố` hay `THÀNH PHỐ` đều khớp).
+  * Giữ nguyên chữ hoa/thường bản gốc của từ viết tắt (VD: luôn ra `TP.HCM`, `CHXHCNVN`).
+  * Tự động ưu tiên thay thế cụm từ dài trước cụm từ ngắn để tránh lỗi hỏng văn bản.
+
+### 3. 🔍 Rà Soát & Sửa Lỗi Chính Tả Tiếng Việt
+* Phát hiện các lỗi chính tả phổ biến (dấu hỏi/ngã, phụ âm x/s, ch/tr, từ ghép sai).
+* Hỗ trợ **sửa từng lỗi** hoặc **sửa tất cả lỗi** với 1 cú nhấp chuột.
+
+---
+
+## 📁 Cấu Trúc Thư Mục Dự Án
 
 ```
 Word Add-in/
-├── manifest.xml           ← File khai báo add-in (upload vào Word)
-├── app_standalone.html    ← Giao diện chính (single-file, host trên CDN)
-├── app.js                 ← JavaScript cho bản local development
-├── index.html             ← HTML cho bản local development
-├── style.css              ← CSS cho bản local development
-├── commands.html           ← Commands page (Office.js)
-├── package.json           ← npm config
+├── manifest.xml           ← File khai báo Add-in (dùng để sideload vào Word)
+├── app_standalone.html    ← Giao diện chính (Standalone single-file web app)
+├── app.js                 ← Mã nguồn xử lý JavaScript chính
+├── index.html             ← Trang HTML ứng dụng
+├── style.css              ← Giao diện CSS
+├── commands.html          ← Trang khởi tạo Office.js Commands
+├── package.json           ← Cấu hình dự án npm & scripts
+├── .gitignore             ← Cấu hình loại bỏ node_modules và tệp tạm
 ├── assets/
-│   ├── icon-16.png        ← Icon 16x16 cho Ribbon
-│   ├── icon-32.png        ← Icon 32x32 cho Ribbon
-│   └── icon-80.png        ← Icon 80x80 cho Ribbon
-└── README.md              ← File này
+│   ├── icon-16.png        ← Icon 16x16 cho thanh Ribbon
+│   ├── icon-32.png        ← Icon 32x32 cho thanh Ribbon
+│   └── icon-80.png        ← Icon 80x80 cho thanh Ribbon
+└── README.md              ← Hướng dẫn sử dụng
 ```
 
 ---
 
-## 🖥️ CÁCH CÀI ĐẶT TRÊN WORD 365 DESKTOP
+## 🚀 CÁCH TRIỂN KHAI VÀ CÀI ĐẶT
 
-### Bước 1: Push toàn bộ file lên GitHub
+### 1. Đưa Dự Án Lên GitHub (Hosting)
 
-Đảm bảo repo `binhnt-vn/Hotrotiengviet` đã có đầy đủ các file:
-- `app_standalone.html`
-- `assets/icon-16.png`
-- `assets/icon-32.png`
-- `assets/icon-80.png`
+1. Tải toàn bộ mã nguồn dự án lên GitHub Repository của bạn.
+2. Bật tính năng **GitHub Pages** (Khuyên dùng):
+   * Vào Repo của bạn trên GitHub ➔ **Settings** ➔ **Pages**.
+   * Tại **Build and deployment**, chọn Branch `main` ➔ nhấn **Save**.
+   * Bạn sẽ nhận được đường dẫn dạng: `https://<your-username>.github.io/<your-repo>/app_standalone.html`.
+3. Cập nhật đường dẫn URL trên vào tệp `manifest.xml` tại ô `<SourceLocation>` và `<bt:Url id="Taskpane.Url">`.
+
+---
+
+### 2. Sideload Vào Word 365 Desktop (Windows)
+
+#### Cách 1: Sử dụng Thư Mục Chia Sẻ (Shared Folder Catalog) — *Khuyên dùng trên Windows*
+1. Chuột phải vào thư mục chứa dự án trên máy (hoặc thư mục trên ổ mạng) ➔ Chọn **Properties** ➔ **Sharing** ➔ **Share...** ➔ Chọn tài khoản của bạn hoặc `Everyone` ➔ Nhấn **Share**.
+2. Sao chép đường dẫn mạng UNC (dạng: `\\localhost\Word Add-in` hoặc `\\ServerName\ShareName`).
+3. Mở Word Desktop ➔ Vào **File** ➔ **Options** ➔ **Trust Center** ➔ **Trust Center Settings...** ➔ **Trusted Add-in Catalogs**.
+4. Dán đường dẫn UNC vào ô **Catalog URL** ➔ Nhấn **Add catalog** ➔ Tích chọn ô **Show in Menu**.
+5. Nhấn **OK** và khởi động lại ứng dụng Word.
+6. Vào tab **Insert** (Chèn) ➔ **Get Add-ins** (hoặc **My Add-ins**) ➔ Chuyển sang tab **SHARED FOLDER** ➔ Chọn Add-in và nhấn **Add**.
+
+---
+
+### 3. Sideload Vào Word Online (Trình duyệt Web)
+
+1. Truy cập [Word Online](https://word.office.com) và mở một văn bản.
+2. Vào **Insert** ➔ **Add-ins** ➔ **My Add-ins**.
+3. Bấm **Upload My Add-in** ở góc trên bên phải.
+4. Chọn tệp `manifest.xml` từ máy tính của bạn và chọn **Upload**.
+
+---
+
+## 🛠️ Hướng Dẫn Dành Cho Lập Trình Viên (Development)
+
+Tải thư viện phụ thuộc và chạy chế độ thử nghiệm:
 
 ```bash
-cd "C:\Users\binhnt.MARKET_CLEARING\Dropbox\NGHIEN CUU\Word Add-in"
-git add .
-git commit -m "Fix add-in: syntax errors, manifest, icons"
-git push origin main
+# Cài đặt thư viện dev
+npm install
+
+# Khởi chạy server HTTPS thử nghiệm tại máy cục bộ (localhost:3000)
+npm run serve
 ```
-
-### Bước 2: Đợi CDN cập nhật (1-2 phút)
-
-File được host qua jsDelivr CDN:
-```
-https://cdn.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html
-```
-
-> **Lưu ý:** Nếu đã push trước đó, có thể cần purge cache CDN bằng cách truy cập:
-> `https://purge.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html`
-
-### Bước 3: Sideload manifest vào Word 365 Desktop
-
-**Cách 1: Upload trực tiếp (đơn giản nhất)**
-1. Mở **Word 365 Desktop**
-2. Vào tab **Insert** (Chèn) trên Ribbon
-3. Bấm **Get Add-ins** (Nhận Add-in) hoặc **My Add-ins**
-4. Chọn tab **My Add-ins** (Add-in của tôi)
-5. Bấm **Upload My Add-in** (Tải lên Add-in của tôi)
-6. Chọn file `manifest.xml` từ thư mục dự án
-7. Bấm **Upload**
-
-**Cách 2: Sideload qua thư mục Wef (nếu Cách 1 không khả dụng)**
-1. Mở File Explorer, vào đường dẫn:
-   ```
-   %LOCALAPPDATA%\Microsoft\Office\16.0\Wef
-   ```
-   (Nếu thư mục `Wef` chưa có, tạo mới)
-2. Copy file `manifest.xml` vào thư mục này
-3. Khởi động lại Word
-
-**Cách 3: Dùng Share folder catalog**
-1. Tạo một thư mục chia sẻ mạng (VD: `\\localhost\AddIns`)
-2. Copy `manifest.xml` vào thư mục đó
-3. Trong Word: **File** → **Options** → **Trust Center** → **Trust Center Settings** → **Trusted Add-in Catalogs**
-4. Thêm URL thư mục chia sẻ, tick **Show in Menu**
-5. Khởi động lại Word
-
-### Bước 4: Sử dụng
-
-Sau khi cài đặt thành công:
-- Nút **"Mở Tiện Ích"** sẽ xuất hiện trong nhóm **"Xử lý Tiếng Việt"** trên tab **Home**
-- Bấm nút để mở Task Pane bên phải với 3 tab tính năng
 
 ---
 
-## 🌐 CÀI ĐẶT TRÊN WORD ONLINE (Web)
-
-1. Truy cập [https://word.office.com](https://word.office.com)
-2. Mở hoặc tạo mới một tài liệu
-3. Vào **Insert** → **Add-ins** → **Upload My Add-in**
-4. Chọn file `manifest.xml`
-5. Add-in sẽ mở ngay lập tức
-
----
-
-## ⚠️ Xử lý sự cố
-
-| Vấn đề | Giải pháp |
-|--------|----------|
-| Task Pane trắng | Kiểm tra CDN URL đã push file chưa. Thử mở URL trực tiếp trên trình duyệt. |
-| Lỗi "manifest invalid" | Đảm bảo manifest.xml đúng định dạng XML. Kiểm tra icon URLs có truy cập được. |
-| Không thấy nút trên Ribbon | Thử đóng và mở lại Word. Hoặc dùng Cách 2 (Wef folder). |
-| Lỗi JavaScript | Mở DevTools (F12) trong Task Pane để xem Console log. |
-| CDN không cập nhật | Purge cache: `https://purge.jsdelivr.net/gh/binhnt-vn/Hotrotiengviet@main/app_standalone.html` |
+## 📄 Giấy Phép
+Dự án được phát hành theo giấy phép **MIT License**.
