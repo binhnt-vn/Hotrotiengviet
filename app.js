@@ -365,9 +365,39 @@ async function replaceAbbreviations() {
                 }
             }
 
+            // Bước 2: Tự động loại bỏ các cụm lặp thừa trong ngoặc như "PPA (PPA)" -> "PPA" hoặc "Genco1 (Genco1)" -> "Genco1"
+            range.load('text');
+            await context.sync();
+            var currentText = range.text || '';
+
+            var dupRegex = /([^\s()]+(?:\s+[^\s()]+)*)\s*\(\s*\1\s*\)/gi;
+            var dupMatches = [];
+            var match;
+
+            while ((match = dupRegex.exec(currentText)) !== null) {
+                dupMatches.push({ fullMatch: match[0], keepText: match[1] });
+            }
+
+            var cleanCount = 0;
+            for (var di = 0; di < dupMatches.length; di++) {
+                var dupItem = dupMatches[di];
+                var resDup = range.search(dupItem.fullMatch, { matchCase: false });
+                resDup.load('items');
+                await context.sync();
+
+                for (var k = 0; k < resDup.items.length; k++) {
+                    resDup.items[k].insertText(dupItem.keepText, Word.InsertLocation.replace);
+                    cleanCount++;
+                }
+            }
+
             await context.sync();
             statusDiv.className = 'status-msg success';
-            statusDiv.innerText = '✅ Đã thay thế ' + totalReplaced + ' cụm từ viết tắt!';
+            if (cleanCount > 0) {
+                statusDiv.innerText = '✅ Đã thay thế ' + totalReplaced + ' cụm từ & loại bỏ ' + cleanCount + ' lặp thừa trong ngoặc!';
+            } else {
+                statusDiv.innerText = '✅ Đã thay thế ' + totalReplaced + ' cụm từ viết tắt!';
+            }
         });
     } catch (err) {
         console.error(err);
