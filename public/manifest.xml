@@ -10,7 +10,7 @@
   <Version>1.1.0.0</Version>
   <ProviderName>Vietnamese Word Utility</ProviderName>
   <DefaultLocale>vi-VN</DefaultLocale>
-  <DisplayName DefaultValue="Tiện ích Văn bản Tiếng Việt" />
+  <DisplayName DefaultValue="Tiện ích rút gọn văn bản" />
   <Description DefaultValue="Công cụ hỗ trợ rà soát chính tả, thay thế từ viết tắt và rút ngắn định dạng ngày tháng trong Word." />
   <IconUrl DefaultValue="https://word-abbrev.binhnt-vn.workers.dev/assets/icon-32.png" />
   <HighResolutionIconUrl DefaultValue="https://word-abbrev.binhnt-vn.workers.dev/assets/icon-80.png" />
@@ -88,13 +88,13 @@
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="https://github.com/binhnt-vn/Hotrotiengviet" />
       </bt:Urls>
       <bt:ShortStrings>
-        <bt:String id="GetStarted.Title" DefaultValue="Tiện ích Tiếng Việt đã sẵn sàng!" />
-        <bt:String id="CommandsGroup.Label" DefaultValue="Xử lý Tiếng Việt" />
+        <bt:String id="GetStarted.Title" DefaultValue="Tiện ích rút gọn văn bản đã sẵn sàng!" />
+        <bt:String id="CommandsGroup.Label" DefaultValue="Rút gọn văn bản" />
         <bt:String id="TaskpaneButton.Label" DefaultValue="Mở Tiện Ích" />
       </bt:ShortStrings>
       <bt:LongStrings>
         <bt:String id="GetStarted.Description" DefaultValue="Công cụ rà soát chính tả, viết tắt và ngày tháng tiếng Việt cho Word." />
-        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Mở bảng tiện ích xử lý văn bản tiếng Việt: chính tả, viết tắt, ngày tháng." />
+        <bt:String id="TaskpaneButton.Tooltip" DefaultValue="Mở bảng tiện ích rút gọn văn bản: chính tả, viết tắt, ngày tháng." />
       </bt:LongStrings>
     </Resources>
   </VersionOverrides>

@@ -27,16 +27,54 @@ body {
     margin-bottom: 12px;
     border-bottom: 2px solid var(--primary-color);
     padding-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.header-title-container {
+    flex: 1;
 }
 
 .app-header h1 {
-    font-size: 16px;
+    font-size: 15px;
     color: var(--primary-color);
 }
 
 .subtitle {
     font-size: 11px;
     color: #605e5c;
+}
+
+.lang-toggle {
+    display: inline-flex;
+    background: #e1dfdd;
+    border-radius: 12px;
+    padding: 2px;
+    gap: 2px;
+    margin-left: 8px;
+}
+
+.lang-btn {
+    border: none;
+    background: transparent;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #605e5c;
+    transition: all 0.2s;
+}
+
+.lang-btn.active {
+    background: var(--primary-color);
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.lang-btn:hover:not(.active) {
+    background: #d2d0ce;
 }
 
 .nav-tabs {

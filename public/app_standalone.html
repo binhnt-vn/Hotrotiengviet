@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiện ích Văn bản Tiếng Việt</title>
+    <title data-i18n="app_title">Tiện ích rút gọn văn bản</title>
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <style>
         :root {
@@ -22,9 +22,43 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
         body { background: var(--bg); color: var(--text); padding: 10px; font-size: 13px; }
         
-        .header { margin-bottom: 10px; border-bottom: 2px solid var(--primary); padding-bottom: 6px; }
+        .header {
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        .header-title-container { flex: 1; }
         .header h1 { font-size: 15px; color: var(--primary); }
         .header p { font-size: 11px; color: var(--muted); }
+
+        .lang-toggle {
+            display: inline-flex;
+            background: #e1dfdd;
+            border-radius: 12px;
+            padding: 2px;
+            gap: 2px;
+            margin-left: 8px;
+        }
+        .lang-btn {
+            border: none;
+            background: transparent;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: 700;
+            border-radius: 10px;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+        .lang-btn.active {
+            background: var(--primary);
+            color: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+        }
+        .lang-btn:hover:not(.active) { background: #d2d0ce; }
 
         .nav { display: flex; gap: 3px; margin-bottom: 10px; }
         .tab-btn {
@@ -124,20 +158,26 @@
 </head>
 <body>
     <div class="header">
-        <h1>📝 Tiện ích Tiếng Việt</h1>
-        <p>Xử lý & tối ưu hóa văn bản Word</p>
+        <div class="header-title-container">
+            <h1 data-i18n="header_title">📝 Tiện ích rút gọn văn bản</h1>
+            <p data-i18n="header_subtitle">Tùy chọn xử lý & tối ưu hóa văn bản</p>
+        </div>
+        <div class="lang-toggle">
+            <button class="lang-btn active" id="lang-vi" onclick="setLanguage('vi')">VI</button>
+            <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">EN</button>
+        </div>
     </div>
 
     <div class="nav">
-        <button class="tab-btn active" data-tab="tab-date" onclick="showTab(this, 'tab-date')">📅 Ngày tháng</button>
-        <button class="tab-btn" data-tab="tab-abbrev" onclick="showTab(this, 'tab-abbrev')">🔤 Viết tắt</button>
-        <button class="tab-btn" data-tab="tab-spell" onclick="showTab(this, 'tab-spell')">🔍 Chính tả</button>
+        <button class="tab-btn active" data-tab="tab-date" onclick="showTab(this, 'tab-date')" data-i18n="tab_date">📅 Ngày tháng</button>
+        <button class="tab-btn" data-tab="tab-abbrev" onclick="showTab(this, 'tab-abbrev')" data-i18n="tab_abbrev">🔤 Viết tắt</button>
+        <button class="tab-btn" data-tab="tab-spell" onclick="showTab(this, 'tab-spell')" data-i18n="tab_spell">🔍 Chính tả</button>
     </div>
 
     <!-- TAB NGÀY THÁNG -->
     <div id="tab-date" class="tab-content active">
-        <p class="section-title">Rút ngắn định dạng ngày tháng</p>
-        <p class="desc">Tự động quy đổi ngày tháng dài sang dạng viết tắt gọn gàng:</p>
+        <p class="section-title" data-i18n="date_title">Rút ngắn định dạng ngày tháng</p>
+        <p class="desc" data-i18n="date_desc">Tự động quy đổi ngày tháng dài sang dạng viết tắt gọn gàng:</p>
         <ul class="rules-list">
             <li><code>ngày 20 tháng 07 năm 2026</code> ➔ <code>20/7/2026</code></li>
             <li><code>ngày 20 tháng 07</code> ➔ <code>ngày 20/7</code></li>
@@ -145,54 +185,218 @@
             <li><code>tháng 07</code> ➔ <code>T7</code></li>
         </ul>
         <div class="scope-selector">
-            <label><input type="radio" name="dateScope" value="selection" checked> Vùng đang chọn</label>
-            <label><input type="radio" name="dateScope" value="all"> Toàn bộ văn bản</label>
+            <label><input type="radio" name="dateScope" value="selection" checked> <span data-i18n="scope_selection">Vùng đang chọn</span></label>
+            <label><input type="radio" name="dateScope" value="all"> <span data-i18n="scope_all">Toàn bộ văn bản</span></label>
         </div>
-        <button class="btn" onclick="runFormatDates()">Chuyển đổi ngay</button>
+        <button class="btn" onclick="runFormatDates()" data-i18n="date_btn">Chuyển đổi ngay</button>
         <div id="dateMsg" class="status"></div>
     </div>
 
     <!-- TAB VIẾT TẮT -->
     <div id="tab-abbrev" class="tab-content">
-        <p class="section-title">Thay thế từ khóa thành từ viết tắt</p>
-        <p class="desc">Quản lý danh sách từ điển viết tắt và thay thế trong văn bản.</p>
+        <p class="section-title" data-i18n="abbrev_title">Thay thế từ khóa thành từ viết tắt</p>
+        <p class="desc" data-i18n="abbrev_desc">Quản lý danh sách từ điển viết tắt và thay thế trong văn bản.</p>
         <div style="display: flex; gap: 6px; margin-bottom: 8px;">
-            <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 11px;" onclick="exportRules()">📥 Xuất JSON</button>
-            <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 11px;" onclick="document.getElementById('importFile').click()">📤 Nhập JSON</button>
+            <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 11px;" onclick="exportRules()" data-i18n="btn_export">📥 Xuất JSON</button>
+            <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 11px;" onclick="document.getElementById('importFile').click()" data-i18n="btn_import">📤 Nhập JSON</button>
             <input type="file" id="importFile" accept=".json" style="display: none;" onchange="importRules(event)">
         </div>
         <div class="input-group">
-            <input type="text" id="fullInp" placeholder="Cụm từ đầy đủ (VD: Thành phố)">
-            <input type="text" id="shortInp" placeholder="Từ viết tắt (VD: TP.)">
-            <button class="btn btn-secondary" onclick="addRule()">+ Thêm từ điển</button>
+            <input type="text" id="fullInp" placeholder="Cụm từ đầy đủ (VD: Thành phố)" data-i18n-ph="ph_full">
+            <input type="text" id="shortInp" placeholder="Từ viết tắt (VD: TP.)" data-i18n-ph="ph_short">
+            <button class="btn btn-secondary" onclick="addRule()" data-i18n="btn_add_rule">+ Thêm từ điển</button>
         </div>
         <div class="table-wrap">
             <table>
-                <thead><tr><th>Cụm từ đầy đủ</th><th>Viết tắt</th><th style="width: 75px; text-align: center;">Thao tác</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th data-i18n="th_full">Cụm từ đầy đủ</th>
+                        <th data-i18n="th_short">Viết tắt</th>
+                        <th style="width: 75px; text-align: center;" data-i18n="th_action">Thao tác</th>
+                    </tr>
+                </thead>
                 <tbody id="ruleBody"></tbody>
             </table>
         </div>
         <div class="scope-selector">
-            <label><input type="radio" name="abbrevScope" value="selection" checked> Vùng đang chọn</label>
-            <label><input type="radio" name="abbrevScope" value="all"> Toàn bộ văn bản</label>
+            <label><input type="radio" name="abbrevScope" value="selection" checked> <span data-i18n="scope_selection">Vùng đang chọn</span></label>
+            <label><input type="radio" name="abbrevScope" value="all"> <span data-i18n="scope_all">Toàn bộ văn bản</span></label>
         </div>
-        <button class="btn" onclick="runReplaceAbbrev()">Thay thế viết tắt</button>
+        <button class="btn" onclick="runReplaceAbbrev()" data-i18n="abbrev_btn">Thay thế viết tắt</button>
         <div id="abbrevMsg" class="status"></div>
     </div>
 
     <!-- TAB CHÍNH TẢ -->
     <div id="tab-spell" class="tab-content">
-        <p class="section-title">Rà soát chính tả Tiếng Việt</p>
-        <p class="desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.</p>
+        <p class="section-title" data-i18n="spell_title">Rà soát chính tả Tiếng Việt</p>
+        <p class="desc" data-i18n="spell_desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.</p>
         <div class="scope-selector">
-            <label><input type="radio" name="spellScope" value="selection" checked> Vùng đang chọn</label>
-            <label><input type="radio" name="spellScope" value="all"> Toàn bộ văn bản</label>
+            <label><input type="radio" name="spellScope" value="selection" checked> <span data-i18n="scope_selection">Vùng đang chọn</span></label>
+            <label><input type="radio" name="spellScope" value="all"> <span data-i18n="scope_all">Toàn bộ văn bản</span></label>
         </div>
-        <button class="btn" onclick="runCheckSpell()">Quét chính tả</button>
+        <button class="btn" onclick="runCheckSpell()" data-i18n="spell_btn">Quét chính tả</button>
         <div id="spellResults" class="spell-results"></div>
     </div>
 
     <script>
+        // ============================================================
+        // INTERNATIONALIZATION (i18n)
+        // ============================================================
+        var translations = {
+            vi: {
+                app_title: "Tiện ích rút gọn văn bản",
+                header_title: "📝 Tiện ích rút gọn văn bản",
+                header_subtitle: "Tùy chọn xử lý & tối ưu hóa văn bản",
+                tab_date: "📅 Ngày tháng",
+                tab_abbrev: "🔤 Viết tắt",
+                tab_spell: "🔍 Chính tả",
+                date_title: "Rút ngắn định dạng ngày tháng",
+                date_desc: "Tự động quy đổi ngày tháng dài sang dạng viết tắt gọn gàng:",
+                scope_selection: "Vùng đang chọn",
+                scope_all: "Toàn bộ văn bản",
+                date_btn: "Chuyển đổi ngay",
+                date_processing: "⏳ Đang xử lý...",
+                date_success: "✅ Đã chuyển đổi thành công {count} vị trí!",
+                date_error: "❌ Lỗi: {error}",
+                abbrev_title: "Thay thế từ khóa thành từ viết tắt",
+                abbrev_desc: "Quản lý danh sách từ điển viết tắt và thay thế trong văn bản.",
+                btn_export: "📥 Xuất JSON",
+                btn_import: "📤 Nhập JSON",
+                ph_full: "Cụm từ đầy đủ (VD: Thành phố)",
+                ph_short: "Từ viết tắt (VD: TP.)",
+                btn_add_rule: "+ Thêm từ điển",
+                th_full: "Cụm từ đầy đủ",
+                th_short: "Viết tắt",
+                th_action: "Thao tác",
+                btn_edit_title: "Sửa quy tắc này",
+                btn_del_title: "Xóa quy tắc này",
+                btn_save_title: "Lưu thay đổi",
+                btn_cancel_title: "Hủy",
+                abbrev_btn: "Thay thế viết tắt",
+                abbrev_processing: "⏳ Đang thay thế...",
+                abbrev_success: "✅ Đã thay thế {replaced} cụm từ viết tắt!",
+                abbrev_success_clean: "✅ Đã thay thế {replaced} cụm từ & loại bỏ {clean} lặp thừa trong ngoặc!",
+                abbrev_empty_export: "⚠️ Danh sách từ điển đang trống!",
+                abbrev_export_success: "✅ Đã xuất {count} quy tắc ra tệp tu_dien_viet_tat.json!",
+                abbrev_import_success: "✅ Nhập thành công! (Thêm mới: {added}, Cập nhật: {updated})",
+                abbrev_alert_empty: "Vui lòng nhập đầy đủ thông tin cụm từ và từ viết tắt!",
+                spell_title: "Rà soát chính tả Tiếng Việt",
+                spell_desc: "Quét lỗi phụ âm đầu (n/l, ch/tr, x/s), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.",
+                spell_btn: "Quét chính tả",
+                spell_checking: "⏳ Đang quét chính tả...",
+                spell_no_errors: "🎉 Không phát hiện lỗi chính tả phổ biến nào!",
+                spell_found_errors: "⚠️ Phát hiện {count} nghi vấn chính tả:",
+                spell_fix_all: "🔧 Sửa tất cả {count} lỗi",
+                spell_found_word: "Phát hiện",
+                spell_suggest_fix: "Gợi ý sửa",
+                spell_fix_this: "Sửa lỗi này",
+                spell_fix_all_success: "🎉 Đã tự động sửa thành công {count} lỗi chính tả!"
+            },
+            en: {
+                app_title: "Text Shortener Utility",
+                header_title: "📝 Text Shortener Utility",
+                header_subtitle: "Text processing & optimization options",
+                tab_date: "📅 Date Format",
+                tab_abbrev: "🔤 Abbreviations",
+                tab_spell: "🔍 Spell Check",
+                date_title: "Shorten Date Format",
+                date_desc: "Automatically convert long date formats to concise abbreviations:",
+                scope_selection: "Selection",
+                scope_all: "Entire document",
+                date_btn: "Convert Now",
+                date_processing: "⏳ Processing...",
+                date_success: "✅ Successfully converted {count} occurrences!",
+                date_error: "❌ Error: {error}",
+                abbrev_title: "Replace Keywords with Abbreviations",
+                abbrev_desc: "Manage keywords and replacements to shorten text.",
+                btn_export: "📥 Export JSON",
+                btn_import: "📤 Import JSON",
+                ph_full: "Full phrase (e.g. City)",
+                ph_short: "Abbreviation (e.g. City)",
+                btn_add_rule: "+ Add Rule",
+                th_full: "Full Phrase",
+                th_short: "Abbreviation",
+                th_action: "Actions",
+                btn_edit_title: "Edit this rule",
+                btn_del_title: "Delete this rule",
+                btn_save_title: "Save changes",
+                btn_cancel_title: "Cancel",
+                abbrev_btn: "Replace Abbreviations",
+                abbrev_processing: "⏳ Replacing...",
+                abbrev_success: "✅ Replaced {replaced} abbreviation phrases!",
+                abbrev_success_clean: "✅ Replaced {replaced} phrases & removed {clean} redundant bracket duplicates!",
+                abbrev_empty_export: "⚠️ Dictionary list is empty!",
+                abbrev_export_success: "✅ Exported {count} rules to tu_dien_viet_tat.json!",
+                abbrev_import_success: "✅ Import successful! (Added: {added}, Updated: {updated})",
+                abbrev_alert_empty: "Please fill in all full phrase and abbreviation fields!",
+                spell_title: "Vietnamese Spell Check",
+                spell_desc: "Scan initial consonant errors (n/l, ch/tr, x/s), tone marks, and common typos.",
+                spell_btn: "Check Spelling",
+                spell_checking: "⏳ Checking spelling...",
+                spell_no_errors: "🎉 No common spelling errors detected!",
+                spell_found_errors: "⚠️ Found {count} spelling issues:",
+                spell_fix_all: "🔧 Fix all {count} errors",
+                spell_found_word: "Detected",
+                spell_suggest_fix: "Suggestion",
+                spell_fix_this: "Fix this issue",
+                spell_fix_all_success: "🎉 Automatically fixed {count} spelling errors!"
+            }
+        };
+
+        var currentLang = localStorage.getItem('app_lang') || 'vi';
+
+        function t(key, params) {
+            var dict = translations[currentLang] || translations.vi;
+            var str = dict[key] || translations.vi[key] || key;
+            if (params) {
+                Object.keys(params).forEach(function(k) {
+                    str = str.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+                });
+            }
+            return str;
+        }
+
+        function setLanguage(lang) {
+            if (lang !== 'vi' && lang !== 'en') return;
+            currentLang = lang;
+            try {
+                localStorage.setItem('app_lang', lang);
+            } catch (e) {
+                console.warn('Cannot save app_lang to localStorage:', e);
+            }
+            updateUILanguage();
+        }
+
+        function updateUILanguage() {
+            var btnVi = document.getElementById('lang-vi');
+            var btnEn = document.getElementById('lang-en');
+            if (btnVi && btnEn) {
+                if (currentLang === 'vi') {
+                    btnVi.classList.add('active');
+                    btnEn.classList.remove('active');
+                } else {
+                    btnEn.classList.add('active');
+                    btnVi.classList.remove('active');
+                }
+            }
+
+            document.querySelectorAll('[data-i18n]').forEach(function(el) {
+                var key = el.getAttribute('data-i18n');
+                if (key === 'app_title') {
+                    document.title = t(key);
+                } else {
+                    el.innerText = t(key);
+                }
+            });
+
+            document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+                var key = el.getAttribute('data-i18n-ph');
+                el.placeholder = t(key);
+            });
+
+            renderTable();
+        }
+
         // ============================================================
         // KHỞI TẠO OFFICE.JS
         // ============================================================
@@ -200,33 +404,23 @@
 
         Office.onReady(function(info) {
             console.log("Office.onReady:", info);
-            if (info.host === Office.HostType.Word) {
-                isOfficeReady = true;
-                loadRules();
-                console.log("Add-in initialized successfully for Word.");
-            } else {
-                // Vẫn cho phép chạy nếu host chưa xác định (một số phiên bản cũ)
-                isOfficeReady = true;
-                loadRules();
-                console.log("Office host:", info.host, "- attempting to initialize anyway.");
-            }
+            isOfficeReady = true;
+            loadRules();
+            updateUILanguage();
+            console.log("Add-in initialized successfully.");
         });
 
         // ============================================================
         // CHUYỂN TAB
         // ============================================================
         function showTab(btnEl, tabId) {
-            // Bỏ active tất cả tab buttons
             document.querySelectorAll('.tab-btn').forEach(function(el) {
                 el.classList.remove('active');
             });
-            // Bỏ active tất cả tab content
             document.querySelectorAll('.tab-content').forEach(function(el) {
                 el.classList.remove('active');
             });
-            // Đánh dấu active cho button được click
             if (btnEl) btnEl.classList.add('active');
-            // Hiển thị tab content tương ứng
             var tabEl = document.getElementById(tabId);
             if (tabEl) tabEl.classList.add('active');
         }
@@ -249,7 +443,7 @@
         async function runFormatDates() {
             var msg = document.getElementById('dateMsg');
             msg.className = 'status';
-            msg.innerHTML = '<span class="loading">⏳ Đang xử lý...</span>';
+            msg.innerHTML = '<span class="loading">' + t('date_processing') + '</span>';
 
             try {
                 await Word.run(async function(context) {
@@ -260,7 +454,6 @@
                     var text = range.text || '';
                     var count = 0;
 
-                    // Thứ tự pattern quan trọng: dài nhất trước
                     var patterns = [
                         {
                             reg: /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi,
@@ -302,7 +495,6 @@
                             }
                         }
 
-                        // Reload text sau mỗi pattern vì nội dung đã thay đổi
                         range.load('text');
                         await context.sync();
                         text = range.text || '';
@@ -310,12 +502,12 @@
 
                     await context.sync();
                     msg.className = 'status success';
-                    msg.innerText = '✅ Đã chuyển đổi thành công ' + count + ' vị trí!';
+                    msg.innerText = t('date_success', { count: count });
                 });
             } catch (err) {
                 console.error('formatDates error:', err);
                 msg.className = 'status error';
-                msg.innerText = '❌ Lỗi: ' + (err.message || err);
+                msg.innerText = t('date_error', { error: err.message || err });
             }
         }
 
@@ -349,7 +541,7 @@
                 if (saved) {
                     abbrevList = JSON.parse(saved);
                 } else {
-                    abbrevList = defaultRules.slice(); // Copy mặc định
+                    abbrevList = defaultRules.slice();
                 }
             } catch (e) {
                 abbrevList = defaultRules.slice();
@@ -382,16 +574,16 @@
                         '<td><input type="text" id="editFullInp" class="input-edit" value="' + escapeAttr(rule.full) + '"></td>' +
                         '<td><input type="text" id="editShortInp" class="input-edit" value="' + escapeAttr(rule.short) + '"></td>' +
                         '<td style="text-align: center;">' +
-                        '<button class="btn-edit" style="background:var(--success);" title="Lưu thay đổi" onclick="saveEditRule(' + i + ')">💾</button>' +
-                        '<button class="btn-del" title="Hủy" onclick="cancelEditRule()">✕</button>' +
+                        '<button class="btn-edit" style="background:var(--success);" title="' + t('btn_save_title') + '" onclick="saveEditRule(' + i + ')">💾</button>' +
+                        '<button class="btn-del" title="' + t('btn_cancel_title') + '" onclick="cancelEditRule()">✕</button>' +
                         '</td>';
                 } else {
                     tr.innerHTML =
                         '<td>' + escapeHtml(rule.full) + '</td>' +
                         '<td><strong>' + escapeHtml(rule.short) + '</strong></td>' +
                         '<td style="text-align: center;">' +
-                        '<button class="btn-edit" title="Sửa quy tắc này" onclick="editRule(' + i + ')">✏️</button>' +
-                        '<button class="btn-del" title="Xóa quy tắc này" onclick="deleteRule(' + i + ')">✕</button>' +
+                        '<button class="btn-edit" title="' + t('btn_edit_title') + '" onclick="editRule(' + i + ')">✏️</button>' +
+                        '<button class="btn-del" title="' + t('btn_del_title') + '" onclick="deleteRule(' + i + ')">✕</button>' +
                         '</td>';
                 }
                 tbody.appendChild(tr);
@@ -417,7 +609,7 @@
             var s = shortEl.value.trim();
 
             if (!f || !s) {
-                alert('Vui lòng nhập đầy đủ thông tin cụm từ và từ viết tắt!');
+                alert(t('abbrev_alert_empty'));
                 return;
             }
 
@@ -431,7 +623,7 @@
 
         function escapeHtml(str) {
             var div = document.createElement('div');
-            div.appendChild(document.createTextNode(str));
+            div.appendChild(document.createTextNode(str || ''));
             return div.innerHTML;
         }
 
@@ -441,7 +633,7 @@
             var f = fullEl.value.trim();
             var s = shortEl.value.trim();
             if (!f || !s) {
-                alert('Vui lòng nhập đầy đủ cụm từ và từ viết tắt!');
+                alert(t('abbrev_alert_empty'));
                 return;
             }
             abbrevList.push({ full: f, short: s });
@@ -463,7 +655,7 @@
             var msg = document.getElementById('abbrevMsg');
             if (!abbrevList || abbrevList.length === 0) {
                 msg.className = 'status error';
-                msg.innerText = '⚠️ Danh sách từ điển đang trống!';
+                msg.innerText = t('abbrev_empty_export');
                 return;
             }
             try {
@@ -479,11 +671,11 @@
                 URL.revokeObjectURL(url);
 
                 msg.className = 'status success';
-                msg.innerText = '✅ Đã xuất ' + abbrevList.length + ' quy tắc ra tệp tu_dien_viet_tat.json!';
+                msg.innerText = t('abbrev_export_success', { count: abbrevList.length });
             } catch (err) {
                 console.error('exportRules error:', err);
                 msg.className = 'status error';
-                msg.innerText = '❌ Lỗi xuất tệp: ' + (err.message || err);
+                msg.innerText = t('date_error', { error: err.message || err });
             }
         }
 
@@ -531,11 +723,11 @@
                     renderTable();
 
                     msg.className = 'status success';
-                    msg.innerText = '✅ Nhập thành công! (Thêm mới: ' + addedCount + ', Cập nhật: ' + updatedCount + ')';
+                    msg.innerText = t('abbrev_import_success', { added: addedCount, updated: updatedCount });
                 } catch (err) {
                     console.error('importRules error:', err);
                     msg.className = 'status error';
-                    msg.innerText = '❌ Lỗi nhập tệp: ' + (err.message || err);
+                    msg.innerText = t('date_error', { error: err.message || err });
                 } finally {
                     event.target.value = '';
                 }
@@ -546,11 +738,11 @@
         async function runReplaceAbbrev() {
             var msg = document.getElementById('abbrevMsg');
             msg.className = 'status';
-            msg.innerHTML = '<span class="loading">⏳ Đang thay thế...</span>';
+            msg.innerHTML = '<span class="loading">' + t('abbrev_processing') + '</span>';
 
             if (abbrevList.length === 0) {
                 msg.className = 'status error';
-                msg.innerText = '⚠️ Chưa có quy tắc viết tắt nào!';
+                msg.innerText = t('abbrev_empty_export');
                 return;
             }
 
@@ -559,15 +751,12 @@
                     var range = getRange(context, 'abbrevScope');
                     var total = 0;
 
-                    // Sắp xếp cụm từ từ dài nhất đến ngắn nhất để ưu tiên cụm từ dài trước
                     var sortedRules = abbrevList.slice().sort(function(a, b) {
                         return b.full.length - a.full.length;
                     });
 
                     for (var ri = 0; ri < sortedRules.length; ri++) {
                         var rule = sortedRules[ri];
-                        // matchCase: false -> Tìm kiếm KHÔNG phân biệt chữ hoa/thường đối với cụm từ đầy đủ
-                        // insertText(rule.short) -> Thay thế đúng định dạng chữ hoa/thường bản gốc của từ viết tắt
                         var res = range.search(rule.full, { matchCase: false, matchWholeWord: false });
                         res.load('items');
                         await context.sync();
@@ -578,7 +767,6 @@
                         }
                     }
 
-                    // Bước 2: Tự động loại bỏ các cụm lặp thừa trong ngoặc như "PPA (PPA)" -> "PPA" hoặc "Genco1 (Genco1)" -> "Genco1"
                     range.load('text');
                     await context.sync();
                     var currentText = range.text || '';
@@ -607,15 +795,15 @@
                     await context.sync();
                     msg.className = 'status success';
                     if (cleanCount > 0) {
-                        msg.innerText = '✅ Đã thay thế ' + total + ' cụm từ & loại bỏ ' + cleanCount + ' lặp thừa trong ngoặc!';
+                        msg.innerText = t('abbrev_success_clean', { replaced: total, clean: cleanCount });
                     } else {
-                        msg.innerText = '✅ Đã thay thế ' + total + ' cụm từ viết tắt!';
+                        msg.innerText = t('abbrev_success', { replaced: total });
                     }
                 });
             } catch (err) {
                 console.error('replaceAbbrev error:', err);
                 msg.className = 'status error';
-                msg.innerText = '❌ Lỗi: ' + (err.message || err);
+                msg.innerText = t('date_error', { error: err.message || err });
             }
         }
 
@@ -623,7 +811,6 @@
         // 3. CHÍNH TẢ TIẾNG VIỆT
         // ============================================================
         var spellRules = [
-            // Phụ âm x/s
             { err: 'xản xuất', fix: 'sản xuất', desc: "Sai 'x' → 's'" },
             { err: 'sơ xuất', fix: 'sơ suất', desc: "Sai 'xuất' → 'suất'" },
             { err: 'đột suất', fix: 'đột xuất', desc: "Sai 'suất' → 'xuất'" },
@@ -632,39 +819,27 @@
             { err: 'suất sắc', fix: 'xuất sắc', desc: "Sai 'suất' → 'xuất'" },
             { err: 'xuất xắc', fix: 'xuất sắc', desc: "Sai 'xắc' → 'sắc'" },
             { err: 'suất xắc', fix: 'xuất sắc', desc: "Sai 'suất xắc' → 'xuất sắc'" },
-
-            // Phụ âm ch/tr, th
             { err: 'chuẩn đoán', fix: 'chẩn đoán', desc: "Sai 'chuẩn' → 'chẩn'" },
             { err: 'thăm quan', fix: 'tham quan', desc: "Sai 'thăm' → 'tham'" },
             { err: 'chỉnh chu', fix: 'chỉn chu', desc: "Sai 'chỉnh' → 'chỉn'" },
             { err: 'trút kinh nghiệm', fix: 'rút kinh nghiệm', desc: "Sai 'trút' → 'rút'" },
-
-            // Dấu hỏi / ngã
             { err: 'suôn sẽ', fix: 'suôn sẻ', desc: "Sai dấu ngã → hỏi" },
             { err: 'cũng cố', fix: 'củng cố', desc: "Sai dấu ngã → hỏi" },
             { err: 'dể dàng', fix: 'dễ dàng', desc: "Sai dấu hỏi → ngã" },
-            { err: 'sử dụng', fix: 'sử dụng', desc: '' }, // Đúng - skip
             { err: 'bổ xung', fix: 'bổ sung', desc: "Sai 'xung' → 'sung'" },
-            { err: 'kỹ lưỡng', fix: 'kỹ lưỡng', desc: '' }, // Đúng - skip
-
-            // Từ ghép sai phổ biến
             { err: 'vô hình chung', fix: 'vô hình trung', desc: "Sai 'chung' → 'trung'" },
-            { err: 'yếu điểm', fix: 'điểm yếu', desc: "Sai thứ tự từ" },
-            { err: 'đặc cử', fix: 'đặc cách', desc: "Sai 'cử' → 'cách'" },
             { err: 'tựu chung', fix: 'tựu trung', desc: "Sai 'chung' → 'trung'" },
-            { err: 'tham gia quan', fix: 'tham quan', desc: "Thừa từ" },
             { err: 'chín mùi', fix: 'chín muồi', desc: "Sai 'mùi' → 'muồi'" },
             { err: 'khoảng khắc', fix: 'khoảnh khắc', desc: "Sai 'khoảng' → 'khoảnh'" }
         ];
 
-        // Lọc chỉ lấy rules thực sự là lỗi (err khác fix)
         var activeSpellRules = spellRules.filter(function(r) {
             return r.err !== r.fix && r.desc !== '';
         });
 
         async function runCheckSpell() {
             var container = document.getElementById('spellResults');
-            container.innerHTML = '<div class="status"><span class="loading">⏳ Đang quét chính tả...</span></div>';
+            container.innerHTML = '<div class="status"><span class="loading">' + t('spell_checking') + '</span></div>';
 
             try {
                 await Word.run(async function(context) {
@@ -689,25 +864,24 @@
                     }
 
                     if (found.length === 0) {
-                        container.innerHTML = '<div class="status success">🎉 Không phát hiện lỗi chính tả phổ biến nào!</div>';
+                        container.innerHTML = '<div class="status success">' + t('spell_no_errors') + '</div>';
                         return;
                     }
 
-                    // Header với nút Sửa tất cả
                     var html = '<div style="margin-bottom:8px">';
-                    html += '<div class="status error" style="margin-bottom:6px">⚠️ Phát hiện ' + found.length + ' nghi vấn chính tả:</div>';
-                    html += '<button class="btn btn-success" style="font-size:11px;padding:6px" onclick="fixAllSpell()">🔧 Sửa tất cả ' + found.length + ' lỗi</button>';
+                    html += '<div class="status error" style="margin-bottom:6px">' + t('spell_found_errors', { count: found.length }) + '</div>';
+                    html += '<button class="btn btn-success" style="font-size:11px;padding:6px" onclick="fixAllSpell()">' + t('spell_fix_all', { count: found.length }) + '</button>';
                     html += '</div>';
 
                     for (var fi = 0; fi < found.length; fi++) {
                         var item = found[fi];
                         html += '<div class="spell-item">';
-                        html += '<div>Phát hiện: <span class="err-word">' + escapeHtml(item.original) + '</span></div>';
-                        html += '<div>Gợi ý sửa: <span class="fix-word">' + escapeHtml(item.correct) + '</span>';
+                        html += '<div>' + t('spell_found_word') + ': <span class="err-word">' + escapeHtml(item.original) + '</span></div>';
+                        html += '<div>' + t('spell_suggest_fix') + ': <span class="fix-word">' + escapeHtml(item.correct) + '</span>';
                         if (item.desc) html += ' (' + escapeHtml(item.desc) + ')';
                         html += '</div>';
                         html += '<div class="spell-actions">';
-                        html += '<button class="btn-sm" onclick="fixSingleSpell(\'' + escapeAttr(item.original) + '\', \'' + escapeAttr(item.correct) + '\')">Sửa lỗi này</button>';
+                        html += '<button class="btn-sm" onclick="fixSingleSpell(\'' + escapeAttr(item.original) + '\', \'' + escapeAttr(item.correct) + '\')">' + t('spell_fix_this') + '</button>';
                         html += '</div></div>';
                     }
 
@@ -715,7 +889,7 @@
                 });
             } catch (err) {
                 console.error('checkSpell error:', err);
-                container.innerHTML = '<div class="status error">❌ Lỗi rà soát: ' + (err.message || err) + '</div>';
+                container.innerHTML = '<div class="status error">' + t('date_error', { error: err.message || err }) + '</div>';
             }
         }
 
@@ -724,7 +898,7 @@
         }
 
         function escapeAttr(str) {
-            return str.replace(/'/g, "\\'").replace(/"/g, '\\"');
+            return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
 
         async function fixSingleSpell(original, correct) {
@@ -742,12 +916,11 @@
                     }
                     await context.sync();
 
-                    // Quét lại sau khi sửa
                     await runCheckSpell();
                 });
             } catch (err) {
                 console.error('fixSingleSpell error:', err);
-                alert('Lỗi sửa chính tả: ' + (err.message || err));
+                alert(t('date_error', { error: err.message || err }));
             }
         }
 
@@ -771,17 +944,22 @@
 
                     await context.sync();
                     var container = document.getElementById('spellResults');
-                    container.innerHTML = '<div class="status success">🎉 Đã tự động sửa thành công ' + count + ' lỗi chính tả!</div>';
+                    container.innerHTML = '<div class="status success">' + t('spell_fix_all_success', { count: count }) + '</div>';
                 });
             } catch (err) {
                 console.error('fixAllSpell error:', err);
-                alert('Lỗi sửa tất cả: ' + (err.message || err));
+                alert(t('date_error', { error: err.message || err }));
             }
         }
 
-        // Khởi tạo bảng ngay khi DOM sẵn sàng (phòng trường hợp Office.onReady chậm)
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', function() { loadRules(); });
+            document.addEventListener('DOMContentLoaded', function() {
+                loadRules();
+                updateUILanguage();
+            });
+        } else {
+            loadRules();
+            updateUILanguage();
         }
     </script>
 </body>

@@ -1,15 +1,177 @@
 // ============================================================
-// Word Add-in: Tiện ích Văn bản Tiếng Việt
-// Version: 1.1.0 - Fixed syntax errors, scope support, window bindings
+// Word Add-in: Tiện ích rút gọn văn bản
+// Version: 1.2.0 - Multi-language support (VI/EN), renamed title
 // ============================================================
+
+// ============================================================
+// INTERNATIONALIZATION (i18n)
+// ============================================================
+var translations = {
+    vi: {
+        app_title: "Tiện ích rút gọn văn bản",
+        header_title: "📝 Tiện ích rút gọn văn bản",
+        header_subtitle: "Tùy chọn xử lý & tối ưu hóa văn bản",
+        tab_date: "📅 Ngày tháng",
+        tab_abbrev: "🔤 Từ viết tắt",
+        tab_spell: "🔍 Chính tả",
+        date_title: "Rút ngắn định dạng ngày tháng",
+        date_desc: "Tự động tìm và quy đổi ngày tháng dài sang định dạng viết tắt gọn gàng:",
+        scope_selection: "Vùng đang chọn",
+        scope_all: "Toàn bộ văn bản",
+        date_btn: "Chuyển đổi ngay",
+        date_processing: "⏳ Đang xử lý...",
+        date_success: "✅ Đã chuyển đổi thành công {count} vị trí!",
+        date_error: "❌ Lỗi: {error}",
+        abbrev_title: "Thay thế từ khóa thành từ viết tắt",
+        abbrev_desc: "Quản lý danh sách từ khóa và thay thế để rút ngắn văn bản.",
+        btn_export: "📥 Xuất JSON",
+        btn_import: "📤 Nhập JSON",
+        ph_full: "Từ/Cụm từ đầy đủ (VD: Thành phố)",
+        ph_short: "Từ viết tắt (VD: TP.)",
+        btn_add_rule: "+ Thêm rule",
+        th_full: "Cụm từ đầy đủ",
+        th_short: "Từ viết tắt",
+        th_action: "Thao tác",
+        btn_edit_title: "Sửa",
+        btn_del_title: "Xóa",
+        btn_save_title: "Lưu",
+        btn_cancel_title: "Hủy",
+        abbrev_btn: "Thay thế viết tắt",
+        abbrev_processing: "Đang thay thế từ viết tắt...",
+        abbrev_success: "✅ Đã thay thế {replaced} cụm từ viết tắt!",
+        abbrev_success_clean: "✅ Đã thay thế {replaced} cụm từ & loại bỏ {clean} lặp thừa trong ngoặc!",
+        abbrev_empty_export: "⚠️ Danh sách từ điển đang trống!",
+        abbrev_export_success: "✅ Đã xuất {count} quy tắc ra tệp tu_dien_viet_tat.json!",
+        abbrev_import_success: "✅ Nhập thành công! (Thêm mới: {added}, Cập nhật: {updated})",
+        abbrev_alert_empty: "Vui lòng nhập đầy đủ thông tin!",
+        spell_title: "Rà soát chính tả Tiếng Việt",
+        spell_desc: "Quét lỗi phụ âm đầu (n/l, ch/tr, x/s, c/k), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.",
+        spell_btn: "Rà soát chính tả",
+        spell_checking: "Đang rà soát chính tả...",
+        spell_no_errors: "🎉 Không phát hiện lỗi chính tả phổ biến nào!",
+        spell_found_errors: "Phát hiện {count} nghi vấn chính tả:",
+        spell_fix_all: "🔧 Sửa tất cả {count} lỗi",
+        spell_found_word: "Từ phát hiện",
+        spell_suggest_fix: "Gợi ý sửa",
+        spell_fix_this: "Sửa lỗi này",
+        spell_fix_all_success: "🎉 Đã tự động sửa thành công {count} lỗi chính tả!"
+    },
+    en: {
+        app_title: "Text Shortener Utility",
+        header_title: "📝 Text Shortener Utility",
+        header_subtitle: "Text processing & optimization options",
+        tab_date: "📅 Date Format",
+        tab_abbrev: "🔤 Abbreviations",
+        tab_spell: "🔍 Spell Check",
+        date_title: "Shorten Date Format",
+        date_desc: "Automatically convert long date formats to concise abbreviations:",
+        scope_selection: "Selection",
+        scope_all: "Entire document",
+        date_btn: "Convert Now",
+        date_processing: "⏳ Processing...",
+        date_success: "✅ Successfully converted {count} occurrences!",
+        date_error: "❌ Error: {error}",
+        abbrev_title: "Replace Keywords with Abbreviations",
+        abbrev_desc: "Manage keywords and replacements to shorten text.",
+        btn_export: "📥 Export JSON",
+        btn_import: "📤 Import JSON",
+        ph_full: "Full phrase (e.g. City)",
+        ph_short: "Abbreviation (e.g. City)",
+        btn_add_rule: "+ Add Rule",
+        th_full: "Full Phrase",
+        th_short: "Abbreviation",
+        th_action: "Actions",
+        btn_edit_title: "Edit",
+        btn_del_title: "Delete",
+        btn_save_title: "Save",
+        btn_cancel_title: "Cancel",
+        abbrev_btn: "Replace Abbreviations",
+        abbrev_processing: "Replacing abbreviations...",
+        abbrev_success: "✅ Replaced {replaced} abbreviation phrases!",
+        abbrev_success_clean: "✅ Replaced {replaced} phrases & removed {clean} redundant bracket duplicates!",
+        abbrev_empty_export: "⚠️ Dictionary list is empty!",
+        abbrev_export_success: "✅ Exported {count} rules to tu_dien_viet_tat.json!",
+        abbrev_import_success: "✅ Import successful! (Added: {added}, Updated: {updated})",
+        abbrev_alert_empty: "Please fill in all fields!",
+        spell_title: "Vietnamese Spell Check",
+        spell_desc: "Scan initial consonant errors (n/l, ch/tr, x/s, c/k), tone marks, and common typos.",
+        spell_btn: "Check Spelling",
+        spell_checking: "Checking spelling...",
+        spell_no_errors: "🎉 No common spelling errors detected!",
+        spell_found_errors: "Found {count} spelling issues:",
+        spell_fix_all: "🔧 Fix all {count} errors",
+        spell_found_word: "Detected word",
+        spell_suggest_fix: "Suggestion",
+        spell_fix_this: "Fix this issue",
+        spell_fix_all_success: "🎉 Automatically fixed {count} spelling errors!"
+    }
+};
+
+var currentLang = localStorage.getItem('app_lang') || 'vi';
+
+function t(key, params) {
+    var dict = translations[currentLang] || translations.vi;
+    var str = dict[key] || translations.vi[key] || key;
+    if (params) {
+        Object.keys(params).forEach(function(k) {
+            str = str.replace(new RegExp('\\{' + k + '\\}', 'g'), params[k]);
+        });
+    }
+    return str;
+}
+
+function setLanguage(lang) {
+    if (lang !== 'vi' && lang !== 'en') return;
+    currentLang = lang;
+    try {
+        localStorage.setItem('app_lang', lang);
+    } catch (e) {
+        console.warn('Cannot save app_lang to localStorage:', e);
+    }
+    updateUILanguage();
+}
+
+function updateUILanguage() {
+    var btnVi = document.getElementById('lang-vi');
+    var btnEn = document.getElementById('lang-en');
+    if (btnVi && btnEn) {
+        if (currentLang === 'vi') {
+            btnVi.classList.add('active');
+            btnEn.classList.remove('active');
+        } else {
+            btnEn.classList.add('active');
+            btnVi.classList.remove('active');
+        }
+    }
+
+    document.querySelectorAll('[data-i18n]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n');
+        if (key === 'app_title') {
+            document.title = t(key);
+        } else {
+            el.innerText = t(key);
+        }
+    });
+
+    document.querySelectorAll('[data-i18n-ph]').forEach(function(el) {
+        var key = el.getAttribute('data-i18n-ph');
+        el.placeholder = t(key);
+    });
+
+    renderAbbrevTable();
+}
 
 // Đảm bảo Office.js khởi tạo hoàn tất
 Office.onReady(function(info) {
     console.log("Office ready info:", info);
-    if (info.host === Office.HostType.Word) {
-        loadAbbrevRules();
-        console.log("Add-in initialized successfully.");
-    }
+    loadAbbrevRules();
+    updateUILanguage();
+    console.log("Add-in initialized successfully.");
+});
+
+// If Office.onReady doesn't fire immediately in plain browser view
+document.addEventListener('DOMContentLoaded', function() {
+    updateUILanguage();
 });
 
 // ============================================================
@@ -28,20 +190,16 @@ function getRange(context, scopeName) {
 // CHUYỂN TAB
 // ============================================================
 function switchTab(tabId) {
-    // Bỏ active tất cả tab buttons
     document.querySelectorAll('.tab-btn').forEach(function(btn) {
         btn.classList.remove('active');
     });
-    // Bỏ active tất cả tab content
     document.querySelectorAll('.tab-content').forEach(function(content) {
         content.classList.remove('active');
     });
 
-    // Đánh dấu active tab content
     var activeTabObj = document.getElementById(tabId);
     if (activeTabObj) activeTabObj.classList.add('active');
 
-    // Đánh dấu active tab button tương ứng
     var btns = document.querySelectorAll('.tab-btn');
     btns.forEach(function(btn) {
         if (btn.getAttribute('data-tab') === tabId) {
@@ -56,7 +214,7 @@ function switchTab(tabId) {
 async function formatDates() {
     var statusDiv = document.getElementById('dateStatus');
     statusDiv.className = 'status-msg';
-    statusDiv.innerText = 'Đang xử lý...';
+    statusDiv.innerText = t('date_processing');
 
     try {
         await Word.run(async function(context) {
@@ -67,7 +225,6 @@ async function formatDates() {
             var text = range.text || '';
             var replaceCount = 0;
 
-            // Thứ tự pattern quan trọng: dài nhất trước
             var patterns = [
                 {
                     reg: /ngày\s+(\d{1,2})\s+tháng\s+(\d{1,2})\s+năm\s+(\d{4})/gi,
@@ -109,7 +266,6 @@ async function formatDates() {
                     }
                 }
 
-                // Reload text sau mỗi pattern vì nội dung đã thay đổi
                 range.load('text');
                 await context.sync();
                 text = range.text || '';
@@ -117,12 +273,12 @@ async function formatDates() {
 
             await context.sync();
             statusDiv.className = 'status-msg success';
-            statusDiv.innerText = 'Đã chuyển đổi thành công ' + replaceCount + ' vị trí!';
+            statusDiv.innerText = t('date_success', { count: replaceCount });
         });
     } catch (err) {
         console.error(err);
         statusDiv.className = 'status-msg error';
-        statusDiv.innerText = 'Lỗi: ' + (err.message || err);
+        statusDiv.innerText = t('date_error', { error: err.message || err });
     }
 }
 
@@ -185,16 +341,16 @@ function renderAbbrevTable() {
                 '<td><input type="text" id="editFullTerm" class="input-edit" value="' + escapeHtml(rule.full) + '"></td>' +
                 '<td><input type="text" id="editShortTerm" class="input-edit" value="' + escapeHtml(rule.short) + '"></td>' +
                 '<td style="text-align: center;">' +
-                '<button class="btn-edit" style="background:var(--success-color);" title="Lưu" onclick="saveEditAbbrevRule(' + idx + ')">💾</button>' +
-                '<button class="btn-del" title="Hủy" onclick="cancelEditAbbrevRule()">✕</button>' +
+                '<button class="btn-edit" style="background:var(--success-color);" title="' + t('btn_save_title') + '" onclick="saveEditAbbrevRule(' + idx + ')">💾</button>' +
+                '<button class="btn-del" title="' + t('btn_cancel_title') + '" onclick="cancelEditAbbrevRule()">✕</button>' +
                 '</td>';
         } else {
             tr.innerHTML =
                 '<td>' + escapeHtml(rule.full) + '</td>' +
                 '<td><strong>' + escapeHtml(rule.short) + '</strong></td>' +
                 '<td style="text-align: center;">' +
-                '<button class="btn-edit" title="Sửa" onclick="editAbbrevRule(' + idx + ')">✏️</button>' +
-                '<button class="btn-del" title="Xóa" onclick="removeAbbrevRule(' + idx + ')">✕</button>' +
+                '<button class="btn-edit" title="' + t('btn_edit_title') + '" onclick="editAbbrevRule(' + idx + ')">✏️</button>' +
+                '<button class="btn-del" title="' + t('btn_del_title') + '" onclick="removeAbbrevRule(' + idx + ')">✕</button>' +
                 '</td>';
         }
         tbody.appendChild(tr);
@@ -220,7 +376,7 @@ function saveEditAbbrevRule(idx) {
     var short_ = shortInput.value.trim();
 
     if (!full || !short_) {
-        alert("Vui lòng nhập đầy đủ thông tin!");
+        alert(t('abbrev_alert_empty'));
         return;
     }
 
@@ -239,7 +395,7 @@ function addAbbrevRule() {
     var short_ = shortInput.value.trim();
 
     if (!full || !short_) {
-        alert("Vui lòng nhập đầy đủ thông tin!");
+        alert(t('abbrev_alert_empty'));
         return;
     }
 
@@ -259,7 +415,7 @@ function exportAbbrevRules() {
     var statusDiv = document.getElementById('abbrevStatus');
     if (!abbrevRules || abbrevRules.length === 0) {
         statusDiv.className = 'status-msg status-error';
-        statusDiv.innerText = '⚠️ Danh sách từ điển đang trống!';
+        statusDiv.innerText = t('abbrev_empty_export');
         return;
     }
     try {
@@ -275,11 +431,11 @@ function exportAbbrevRules() {
         URL.revokeObjectURL(url);
 
         statusDiv.className = 'status-msg status-success';
-        statusDiv.innerText = '✅ Đã xuất ' + abbrevRules.length + ' quy tắc ra tệp tu_dien_viet_tat.json!';
+        statusDiv.innerText = t('abbrev_export_success', { count: abbrevRules.length });
     } catch (err) {
         console.error('exportAbbrevRules error:', err);
         statusDiv.className = 'status-msg status-error';
-        statusDiv.innerText = '❌ Lỗi xuất tệp: ' + (err.message || err);
+        statusDiv.innerText = t('date_error', { error: err.message || err });
     }
 }
 
@@ -326,11 +482,11 @@ function importAbbrevRules(event) {
             saveAbbrevRules();
 
             statusDiv.className = 'status-msg status-success';
-            statusDiv.innerText = '✅ Nhập thành công! (Thêm mới: ' + addedCount + ', Cập nhật: ' + updatedCount + ')';
+            statusDiv.innerText = t('abbrev_import_success', { added: addedCount, updated: updatedCount });
         } catch (err) {
             console.error('importAbbrevRules error:', err);
             statusDiv.className = 'status-msg status-error';
-            statusDiv.innerText = '❌ Lỗi nhập tệp: ' + (err.message || err);
+            statusDiv.innerText = t('date_error', { error: err.message || err });
         } finally {
             event.target.value = '';
         }
@@ -341,14 +497,13 @@ function importAbbrevRules(event) {
 async function replaceAbbreviations() {
     var statusDiv = document.getElementById('abbrevStatus');
     statusDiv.className = 'status-msg';
-    statusDiv.innerText = 'Đang thay thế từ viết tắt...';
+    statusDiv.innerText = t('abbrev_processing');
 
     try {
         await Word.run(async function(context) {
             var range = getRange(context, 'abbrevScope');
             var totalReplaced = 0;
 
-            // Sắp xếp các cụm từ từ dài nhất đến ngắn nhất
             var sortedRules = abbrevRules.slice().sort(function(a, b) {
                 return b.full.length - a.full.length;
             });
@@ -365,7 +520,6 @@ async function replaceAbbreviations() {
                 }
             }
 
-            // Bước 2: Tự động loại bỏ các cụm lặp thừa trong ngoặc như "PPA (PPA)" -> "PPA" hoặc "Genco1 (Genco1)" -> "Genco1"
             range.load('text');
             await context.sync();
             var currentText = range.text || '';
@@ -394,15 +548,15 @@ async function replaceAbbreviations() {
             await context.sync();
             statusDiv.className = 'status-msg success';
             if (cleanCount > 0) {
-                statusDiv.innerText = '✅ Đã thay thế ' + totalReplaced + ' cụm từ & loại bỏ ' + cleanCount + ' lặp thừa trong ngoặc!';
+                statusDiv.innerText = t('abbrev_success_clean', { replaced: totalReplaced, clean: cleanCount });
             } else {
-                statusDiv.innerText = '✅ Đã thay thế ' + totalReplaced + ' cụm từ viết tắt!';
+                statusDiv.innerText = t('abbrev_success', { replaced: totalReplaced });
             }
         });
     } catch (err) {
         console.error(err);
         statusDiv.className = 'status-msg error';
-        statusDiv.innerText = 'Lỗi: ' + (err.message || err);
+        statusDiv.innerText = t('date_error', { error: err.message || err });
     }
 }
 
@@ -410,7 +564,6 @@ async function replaceAbbreviations() {
 // 3. TÍNH NĂNG RÀ SOÁT CHÍNH TẢ TIẾNG VIỆT
 // ============================================================
 var commonVietnameseErrors = [
-    // Phụ âm x/s
     { err: 'xản xuất', fix: 'sản xuất', desc: "Sai 'x' → 's'" },
     { err: 'sơ xuất', fix: 'sơ suất', desc: "Sai 'xuất' → 'suất'" },
     { err: 'đột suất', fix: 'đột xuất', desc: "Sai 'suất' → 'xuất'" },
@@ -419,20 +572,14 @@ var commonVietnameseErrors = [
     { err: 'suất sắc', fix: 'xuất sắc', desc: "Sai 'suất' → 'xuất'" },
     { err: 'xuất xắc', fix: 'xuất sắc', desc: "Sai 'xắc' → 'sắc'" },
     { err: 'suất xắc', fix: 'xuất sắc', desc: "Sai 'suất xắc' → 'xuất sắc'" },
-
-    // Phụ âm ch/tr, th
     { err: 'chuẩn đoán', fix: 'chẩn đoán', desc: "Sai 'chuẩn' → 'chẩn'" },
     { err: 'thăm quan', fix: 'tham quan', desc: "Sai 'thăm' → 'tham'" },
     { err: 'chỉnh chu', fix: 'chỉn chu', desc: "Sai 'chỉnh' → 'chỉn'" },
     { err: 'trút kinh nghiệm', fix: 'rút kinh nghiệm', desc: "Sai 'trút' → 'rút'" },
-
-    // Dấu hỏi / ngã
     { err: 'suôn sẽ', fix: 'suôn sẻ', desc: "Sai dấu ngã → hỏi" },
     { err: 'cũng cố', fix: 'củng cố', desc: "Sai dấu ngã → hỏi" },
     { err: 'dể dàng', fix: 'dễ dàng', desc: "Sai dấu hỏi → ngã" },
     { err: 'bổ xung', fix: 'bổ sung', desc: "Sai 'xung' → 'sung'" },
-
-    // Từ ghép sai phổ biến
     { err: 'vô hình chung', fix: 'vô hình trung', desc: "Sai 'chung' → 'trung'" },
     { err: 'tựu chung', fix: 'tựu trung', desc: "Sai 'chung' → 'trung'" },
     { err: 'chín mùi', fix: 'chín muồi', desc: "Sai 'mùi' → 'muồi'" },
@@ -441,7 +588,7 @@ var commonVietnameseErrors = [
 
 async function checkSpelling() {
     var resultsDiv = document.getElementById('spellResults');
-    resultsDiv.innerHTML = '<div class="status-msg">Đang rà soát chính tả...</div>';
+    resultsDiv.innerHTML = '<div class="status-msg">' + t('spell_checking') + '</div>';
 
     try {
         await Word.run(async function(context) {
@@ -469,7 +616,7 @@ async function checkSpelling() {
         });
     } catch (err) {
         console.error(err);
-        resultsDiv.innerHTML = '<div class="status-msg error">Lỗi rà soát: ' + err.message + '</div>';
+        resultsDiv.innerHTML = '<div class="status-msg error">' + t('date_error', { error: err.message || err }) + '</div>';
     }
 }
 
@@ -480,21 +627,21 @@ function escapeRegex(str) {
 function renderSpellFindings(findings) {
     var resultsDiv = document.getElementById('spellResults');
     if (findings.length === 0) {
-        resultsDiv.innerHTML = '<div class="status-msg success">🎉 Không phát hiện lỗi chính tả phổ biến nào!</div>';
+        resultsDiv.innerHTML = '<div class="status-msg success">' + t('spell_no_errors') + '</div>';
         return;
     }
 
-    var html = '<div class="status-msg error">Phát hiện ' + findings.length + ' nghi vấn chính tả:</div>';
-    html += '<button class="btn btn-primary" style="margin-top:6px;margin-bottom:8px" onclick="fixAllSpelling()">🔧 Sửa tất cả ' + findings.length + ' lỗi</button>';
+    var html = '<div class="status-msg error">' + t('spell_found_errors', { count: findings.length }) + '</div>';
+    html += '<button class="btn btn-primary" style="margin-top:6px;margin-bottom:8px" onclick="fixAllSpelling()">' + t('spell_fix_all', { count: findings.length }) + '</button>';
 
     findings.forEach(function(item) {
         html += '<div class="spell-item">';
-        html += '<div>Từ phát hiện: <span class="original">' + item.original + '</span></div>';
-        html += '<div>Gợi ý sửa: <span class="suggestion">' + item.correct + '</span>';
+        html += '<div>' + t('spell_found_word') + ': <span class="original">' + item.original + '</span></div>';
+        html += '<div>' + t('spell_suggest_fix') + ': <span class="suggestion">' + item.correct + '</span>';
         if (item.desc) html += ' (' + item.desc + ')';
         html += '</div>';
         html += '<div class="spell-actions">';
-        html += "<button class=\"btn-sm\" onclick=\"fixSingleSpell('" + item.original.replace(/'/g, "\\'") + "', '" + item.correct.replace(/'/g, "\\'") + "')\">Sửa lỗi này</button>";
+        html += "<button class=\"btn-sm\" onclick=\"fixSingleSpell('" + item.original.replace(/'/g, "\\'") + "', '" + item.correct.replace(/'/g, "\\'") + "')\">" + t('spell_fix_this') + "</button>";
         html += '</div></div>';
     });
 
@@ -514,12 +661,11 @@ async function fixSingleSpell(original, correct) {
             }
             await context.sync();
 
-            // Quét lại sau khi sửa
             await checkSpelling();
         });
     } catch (err) {
         console.error(err);
-        alert('Lỗi sửa chính tả: ' + (err.message || err));
+        alert(t('date_error', { error: err.message || err }));
     }
 }
 
@@ -543,11 +689,11 @@ async function fixAllSpelling() {
 
             await context.sync();
             var resultsDiv = document.getElementById('spellResults');
-            resultsDiv.innerHTML = '<div class="status-msg success">🎉 Đã tự động sửa thành công ' + count + ' lỗi chính tả!</div>';
+            resultsDiv.innerHTML = '<div class="status-msg success">' + t('spell_fix_all_success', { count: count }) + '</div>';
         });
     } catch (err) {
         console.error(err);
-        alert("Lỗi: " + (err.message || err));
+        alert(t('date_error', { error: err.message || err }));
     }
 }
 
@@ -561,9 +707,8 @@ function escapeAttr(str) {
     return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
 }
 
-// ============================================================
-// GẮN HÀM LÊN WINDOW ĐỂ HTML ONCLICK GỌI ĐƯỢC
-// ============================================================
+// Gắn lên window
+window.setLanguage = setLanguage;
 window.switchTab = switchTab;
 window.formatDates = formatDates;
 window.addAbbrevRule = addAbbrevRule;

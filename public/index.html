@@ -3,29 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiện ích Văn bản Tiếng Việt</title>
+    <title data-i18n="app_title">Tiện ích rút gọn văn bản</title>
     <!-- Office JavaScript API -->
     <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <header class="app-header">
-        <h1>📝 Tiện ích Tiếng Việt</h1>
-        <p class="subtitle">Tùy chọn xử lý & tối ưu hóa văn bản</p>
+        <div class="header-title-container">
+            <h1 data-i18n="header_title">📝 Tiện ích rút gọn văn bản</h1>
+            <p class="subtitle" data-i18n="header_subtitle">Tùy chọn xử lý & tối ưu hóa văn bản</p>
+        </div>
+        <div class="lang-toggle">
+            <button class="lang-btn active" id="lang-vi" onclick="setLanguage('vi')">VI</button>
+            <button class="lang-btn" id="lang-en" onclick="setLanguage('en')">EN</button>
+        </div>
     </header>
 
     <nav class="nav-tabs">
-        <button class="tab-btn active" data-tab="date-tab" onclick="switchTab('date-tab')">📅 Ngày tháng</button>
-        <button class="tab-btn" data-tab="abbrev-tab" onclick="switchTab('abbrev-tab')">🔤 Từ viết tắt</button>
-        <button class="tab-btn" data-tab="spell-tab" onclick="switchTab('spell-tab')">🔍 Chính tả</button>
+        <button class="tab-btn active" data-tab="date-tab" onclick="switchTab('date-tab')" data-i18n="tab_date">📅 Ngày tháng</button>
+        <button class="tab-btn" data-tab="abbrev-tab" onclick="switchTab('abbrev-tab')" data-i18n="tab_abbrev">🔤 Từ viết tắt</button>
+        <button class="tab-btn" data-tab="spell-tab" onclick="switchTab('spell-tab')" data-i18n="tab_spell">🔍 Chính tả</button>
     </nav>
 
     <main class="content-container">
         <!-- TAB 1: NGÀY THÁNG -->
         <section id="date-tab" class="tab-content active">
             <div class="card">
-                <h3>Rút ngắn định dạng ngày tháng</h3>
-                <p class="desc">Tự động tìm và quy đổi ngày tháng dài sang định dạng viết tắt gọn gàng:</p>
+                <h3 data-i18n="date_title">Rút ngắn định dạng ngày tháng</h3>
+                <p class="desc" data-i18n="date_desc">Tự động tìm và quy đổi ngày tháng dài sang định dạng viết tắt gọn gàng:</p>
                 <ul class="rules-list">
                     <li><code>ngày 20 tháng 07 năm 2026</code> ➔ <code>20/7/2026</code></li>
                     <li><code>ngày 20 tháng 07</code> ➔ <code>ngày 20/7</code></li>
@@ -34,11 +40,11 @@
                 </ul>
 
                 <div class="scope-selector">
-                    <label><input type="radio" name="dateScope" value="selection" checked> Vùng đang chọn</label>
-                    <label><input type="radio" name="dateScope" value="all"> Toàn bộ văn bản</label>
+                    <label><input type="radio" name="dateScope" value="selection" checked> <span data-i18n="scope_selection">Vùng đang chọn</span></label>
+                    <label><input type="radio" name="dateScope" value="all"> <span data-i18n="scope_all">Toàn bộ văn bản</span></label>
                 </div>
 
-                <button class="btn btn-primary" onclick="formatDates()">Chuyển đổi ngay</button>
+                <button class="btn btn-primary" onclick="formatDates()" data-i18n="date_btn">Chuyển đổi ngay</button>
                 <div id="dateStatus" class="status-msg"></div>
             </div>
         </section>
@@ -46,28 +52,28 @@
         <!-- TAB 2: TỪ VIẾT TẮT -->
         <section id="abbrev-tab" class="tab-content">
             <div class="card">
-                <h3>Thay thế từ khóa thành từ viết tắt</h3>
-                <p class="desc">Quản lý danh sách từ khóa và thay thế để rút ngắn văn bản.</p>
+                <h3 data-i18n="abbrev_title">Thay thế từ khóa thành từ viết tắt</h3>
+                <p class="desc" data-i18n="abbrev_desc">Quản lý danh sách từ khóa và thay thế để rút ngắn văn bản.</p>
 
                 <div class="io-actions" style="display: flex; gap: 6px; margin-bottom: 10px;">
-                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="exportAbbrevRules()">📥 Xuất JSON</button>
-                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="document.getElementById('importAbbrevFile').click()">📤 Nhập JSON</button>
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="exportAbbrevRules()" data-i18n="btn_export">📥 Xuất JSON</button>
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="document.getElementById('importAbbrevFile').click()" data-i18n="btn_import">📤 Nhập JSON</button>
                     <input type="file" id="importAbbrevFile" accept=".json" style="display: none;" onchange="importAbbrevRules(event)">
                 </div>
 
                 <div class="abbrev-input-group">
-                    <input type="text" id="fullTerm" placeholder="Từ/Cụm từ đầy đủ (VD: Thành phố)">
-                    <input type="text" id="shortTerm" placeholder="Từ viết tắt (VD: TP.)">
-                    <button class="btn btn-secondary" onclick="addAbbrevRule()">+ Thêm rule</button>
+                    <input type="text" id="fullTerm" placeholder="Từ/Cụm từ đầy đủ (VD: Thành phố)" data-i18n-ph="ph_full">
+                    <input type="text" id="shortTerm" placeholder="Từ viết tắt (VD: TP.)" data-i18n-ph="ph_short">
+                    <button class="btn btn-secondary" onclick="addAbbrevRule()" data-i18n="btn_add_rule">+ Thêm rule</button>
                 </div>
 
                 <div class="table-wrapper">
                     <table id="abbrevTable">
                         <thead>
                             <tr>
-                                <th>Cụm từ đầy đủ</th>
-                                <th>Từ viết tắt</th>
-                                <th style="width: 75px; text-align: center;">Thao tác</th>
+                                <th data-i18n="th_full">Cụm từ đầy đủ</th>
+                                <th data-i18n="th_short">Từ viết tắt</th>
+                                <th style="width: 75px; text-align: center;" data-i18n="th_action">Thao tác</th>
                             </tr>
                         </thead>
                         <tbody id="abbrevList">
@@ -77,11 +83,11 @@
                 </div>
 
                 <div class="scope-selector">
-                    <label><input type="radio" name="abbrevScope" value="selection" checked> Vùng đang chọn</label>
-                    <label><input type="radio" name="abbrevScope" value="all"> Toàn bộ văn bản</label>
+                    <label><input type="radio" name="abbrevScope" value="selection" checked> <span data-i18n="scope_selection">Vùng đang chọn</span></label>
+                    <label><input type="radio" name="abbrevScope" value="all"> <span data-i18n="scope_all">Toàn bộ văn bản</span></label>
                 </div>
 
-                <button class="btn btn-primary" onclick="replaceAbbreviations()">Thay thế viết tắt</button>
+                <button class="btn btn-primary" onclick="replaceAbbreviations()" data-i18n="abbrev_btn">Thay thế viết tắt</button>
                 <div id="abbrevStatus" class="status-msg"></div>
             </div>
         </section>
@@ -89,15 +95,15 @@
         <!-- TAB 3: CHÍNH TẢ -->
         <section id="spell-tab" class="tab-content">
             <div class="card">
-                <h3>Rà soát chính tả Tiếng Việt</h3>
-                <p class="desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s, c/k), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.</p>
+                <h3 data-i18n="spell_title">Rà soát chính tả Tiếng Việt</h3>
+                <p class="desc" data-i18n="spell_desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s, c/k), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.</p>
 
                 <div class="scope-selector">
-                    <label><input type="radio" name="spellScope" value="selection" checked> Vùng đang chọn</label>
-                    <label><input type="radio" name="spellScope" value="all"> Toàn bộ văn bản</label>
+                    <label><input type="radio" name="spellScope" value="selection" checked> <span data-i18n="scope_selection">Vùng đang chọn</span></label>
+                    <label><input type="radio" name="spellScope" value="all"> <span data-i18n="scope_all">Toàn bộ văn bản</span></label>
                 </div>
 
-                <button class="btn btn-primary" onclick="checkSpelling()">Rà soát chính tả</button>
+                <button class="btn btn-primary" onclick="checkSpelling()" data-i18n="spell_btn">Rà soát chính tả</button>
 
                 <div id="spellResults" class="spell-results">
                     <!-- Dynamic findings -->
