@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiện ích Văn bản Tiếng Việt</title>
+    <!-- Office JavaScript API -->
+    <script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header class="app-header">
+        <h1>📝 Tiện ích Tiếng Việt</h1>
+        <p class="subtitle">Tùy chọn xử lý & tối ưu hóa văn bản</p>
+    </header>
+
+    <nav class="nav-tabs">
+        <button class="tab-btn active" data-tab="date-tab" onclick="switchTab('date-tab')">📅 Ngày tháng</button>
+        <button class="tab-btn" data-tab="abbrev-tab" onclick="switchTab('abbrev-tab')">🔤 Từ viết tắt</button>
+        <button class="tab-btn" data-tab="spell-tab" onclick="switchTab('spell-tab')">🔍 Chính tả</button>
+    </nav>
+
+    <main class="content-container">
+        <!-- TAB 1: NGÀY THÁNG -->
+        <section id="date-tab" class="tab-content active">
+            <div class="card">
+                <h3>Rút ngắn định dạng ngày tháng</h3>
+                <p class="desc">Tự động tìm và quy đổi ngày tháng dài sang định dạng viết tắt gọn gàng:</p>
+                <ul class="rules-list">
+                    <li><code>ngày 20 tháng 07 năm 2026</code> ➔ <code>20/7/2026</code></li>
+                    <li><code>ngày 20 tháng 07</code> ➔ <code>ngày 20/7</code></li>
+                    <li><code>tháng 07 năm 2026</code> ➔ <code>T7/2026</code></li>
+                    <li><code>tháng 07</code> ➔ <code>T7</code></li>
+                </ul>
+
+                <div class="scope-selector">
+                    <label><input type="radio" name="dateScope" value="selection" checked> Vùng đang chọn</label>
+                    <label><input type="radio" name="dateScope" value="all"> Toàn bộ văn bản</label>
+                </div>
+
+                <button class="btn btn-primary" onclick="formatDates()">Chuyển đổi ngay</button>
+                <div id="dateStatus" class="status-msg"></div>
+            </div>
+        </section>
+
+        <!-- TAB 2: TỪ VIẾT TẮT -->
+        <section id="abbrev-tab" class="tab-content">
+            <div class="card">
+                <h3>Thay thế từ khóa thành từ viết tắt</h3>
+                <p class="desc">Quản lý danh sách từ khóa và thay thế để rút ngắn văn bản.</p>
+
+                <div class="io-actions" style="display: flex; gap: 6px; margin-bottom: 10px;">
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="exportAbbrevRules()">📥 Xuất JSON</button>
+                    <button class="btn btn-secondary" style="flex: 1; padding: 6px; font-size: 11px;" onclick="document.getElementById('importAbbrevFile').click()">📤 Nhập JSON</button>
+                    <input type="file" id="importAbbrevFile" accept=".json" style="display: none;" onchange="importAbbrevRules(event)">
+                </div>
+
+                <div class="abbrev-input-group">
+                    <input type="text" id="fullTerm" placeholder="Từ/Cụm từ đầy đủ (VD: Thành phố)">
+                    <input type="text" id="shortTerm" placeholder="Từ viết tắt (VD: TP.)">
+                    <button class="btn btn-secondary" onclick="addAbbrevRule()">+ Thêm rule</button>
+                </div>
+
+                <div class="table-wrapper">
+                    <table id="abbrevTable">
+                        <thead>
+                            <tr>
+                                <th>Cụm từ đầy đủ</th>
+                                <th>Từ viết tắt</th>
+                                <th style="width: 75px; text-align: center;">Thao tác</th>
+                            </tr>
+                        </thead>
+                        <tbody id="abbrevList">
+                            <!-- Populated dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="scope-selector">
+                    <label><input type="radio" name="abbrevScope" value="selection" checked> Vùng đang chọn</label>
+                    <label><input type="radio" name="abbrevScope" value="all"> Toàn bộ văn bản</label>
+                </div>
+
+                <button class="btn btn-primary" onclick="replaceAbbreviations()">Thay thế viết tắt</button>
+                <div id="abbrevStatus" class="status-msg"></div>
+            </div>
+        </section>
+
+        <!-- TAB 3: CHÍNH TẢ -->
+        <section id="spell-tab" class="tab-content">
+            <div class="card">
+                <h3>Rà soát chính tả Tiếng Việt</h3>
+                <p class="desc">Quét lỗi phụ âm đầu (n/l, ch/tr, x/s, c/k), dấu hỏi/ngã, từ ghép sai chính tả phổ biến.</p>
+
+                <div class="scope-selector">
+                    <label><input type="radio" name="spellScope" value="selection" checked> Vùng đang chọn</label>
+                    <label><input type="radio" name="spellScope" value="all"> Toàn bộ văn bản</label>
+                </div>
+
+                <button class="btn btn-primary" onclick="checkSpelling()">Rà soát chính tả</button>
+
+                <div id="spellResults" class="spell-results">
+                    <!-- Dynamic findings -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html>
